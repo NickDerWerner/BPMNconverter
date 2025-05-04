@@ -1,0 +1,21 @@
+{
+    "id": "Process_1",
+    "name": "Order handling",
+    "nodes": [
+      { "id": "StartEvent_1", "type": "startEvent", "name": "Order received" },
+      { "id": "Task_1", "type": "task", "name": "Validate order" },
+      { "id": "Gateway_1", "type": "exclusiveGateway", "name": "Stock OK?" },
+      { "id": "Task_2", "type": "task", "name": "Ship goods" },
+      { "id": "Task_3", "type": "task", "name": "Back-order" },
+      { "id": "EndEvent_1", "type": "endEvent", "name": "Done" }
+    ],
+    "flows": [
+      { "id": "Flow_1", "source": "StartEvent_1", "target": "Task_1" },
+      { "id": "Flow_2", "source": "Task_1", "target": "Gateway_1" },
+      { "id": "Flow_3", "source": "Gateway_1", "target": "Task_2", "condition": "yes" },
+      { "id": "Flow_4", "source": "Gateway_1", "target": "Task_3", "condition": "no" },
+      { "id": "Flow_5", "source": "Task_2", "target": "EndEvent_1" },
+      { "id": "Flow_6", "source": "Task_3", "target": "EndEvent_1" }
+    ]
+  }
+  

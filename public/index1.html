@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>BPMN Viewer</title>
+  <style>
+    #canvas {
+      height: 90vh;
+      border: 1px solid #ccc;
+    }
+  </style>
+  
+</head>
+<body>
+  <div id="canvas"></div>
+
+  <!-- Option A: Load from your local node_modules -->
+  <script src="/scripts/bpmn-viewer.production.min.js"></script>
+
+  <!-- Option B: Or load from unpkg CDN -->
+  <!-- <script src="https://unpkg.com/bpmn-js@10/dist/bpmn-viewer.production.min.js"></script> -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const viewer = new BpmnJS({ container: '#canvas' });
+
+      fetch('/diagram.bpmn')
+        .then(res => {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.text();
+        })
+        .then(xml => viewer.importXML(xml))
+        .then(() => {
+          // fit the diagram to viewport
+          const canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport', 'auto');
+          console.log('✅ BPMN diagram rendered');
+        })
+        .catch(err => {
+          console.error('❌ could not render BPMN diagram', err);
+          const msg = document.createElement('pre');
+          msg.textContent = err.toString();
+          document.body.appendChild(msg);
+        });
+    });
+  </script>
+</body>
+</html>

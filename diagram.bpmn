@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs_1" targetNamespace="http://example.com/bpmn">
+  <bpmn:process id="Def_TreeHouseProject" name="Tree-house construction and party" isExecutable="true">
+    <bpmn:startEvent id="SE_ProjectStart" name="Tree-house project initiated">
+      <bpmn:outgoing>SF_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_CollectRequirements" name="Collect requirements">
+      <bpmn:incoming>SF_1</bpmn:incoming>
+      <bpmn:outgoing>SF_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sendTask id="Task_SendRequirements" name="Send requirements to architect">
+      <bpmn:incoming>SF_2</bpmn:incoming>
+      <bpmn:outgoing>SF_3</bpmn:outgoing>
+      <bpmn:outgoing>MF_1</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:receiveTask id="Task_ReceiveDraft" name="Receive architect draft">
+      <bpmn:incoming>SF_3</bpmn:incoming>
+      <bpmn:incoming>SF_7</bpmn:incoming>
+      <bpmn:incoming>MF_3</bpmn:incoming>
+      <bpmn:outgoing>SF_4</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:exclusiveGateway id="Gateway_DraftOK" name="Draft satisfactory?">
+      <bpmn:incoming>SF_4</bpmn:incoming>
+      <bpmn:outgoing>SF_5</bpmn:outgoing>
+      <bpmn:outgoing>SF_8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_RefineRequirements" name="Refine requirements">
+      <bpmn:incoming>SF_5</bpmn:incoming>
+      <bpmn:outgoing>SF_6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sendTask id="Task_SendRefined" name="Send refined requirements">
+      <bpmn:incoming>SF_6</bpmn:incoming>
+      <bpmn:outgoing>SF_7</bpmn:outgoing>
+      <bpmn:outgoing>MF_2</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:task id="Task_CreateMaterialsList" name="Create list of materials">
+      <bpmn:incoming>SF_8</bpmn:incoming>
+      <bpmn:outgoing>SF_9</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_CategoriseMaterials" name="Categorise materials">
+      <bpmn:incoming>SF_9</bpmn:incoming>
+      <bpmn:outgoing>SF_10</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sendTask id="Task_OrderMaterials" name="Order materials (multi-store)">
+      <bpmn:incoming>SF_10</bpmn:incoming>
+      <bpmn:outgoing>SF_11</bpmn:outgoing>
+      <bpmn:outgoing>MF_4</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="IE_MaterialsDelivered" name="Materials delivered">
+      <bpmn:incoming>SF_11</bpmn:incoming>
+      <bpmn:incoming>MF_5</bpmn:incoming>
+      <bpmn:outgoing>SF_12</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sendTask id="Task_SendBuildMessages" name="Ask friends to help build">
+      <bpmn:incoming>SF_12</bpmn:incoming>
+      <bpmn:outgoing>SF_13</bpmn:outgoing>
+      <bpmn:outgoing>MF_6</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:manualTask id="Task_BuildTreeHouse" name="Build tree-house">
+      <bpmn:incoming>SF_13</bpmn:incoming>
+      <bpmn:outgoing>SF_14</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:sendTask id="Task_SendPartyInvites" name="Send party invitations">
+      <bpmn:incoming>SF_14</bpmn:incoming>
+      <bpmn:outgoing>SF_15</bpmn:outgoing>
+      <bpmn:outgoing>MF_7</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:receiveTask id="Task_CreateAttendeeList" name="Compile attendee list">
+      <bpmn:incoming>SF_15</bpmn:incoming>
+      <bpmn:incoming>MF_8</bpmn:incoming>
+      <bpmn:outgoing>SF_16</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:serviceTask id="Task_BuySnacks" name="Buy snacks for party">
+      <bpmn:incoming>SF_16</bpmn:incoming>
+      <bpmn:outgoing>SF_17</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EE_ProjectComplete" name="Project complete">
+      <bpmn:incoming>SF_17</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:intermediateCatchEvent id="IC_RequirementsReceived" name="Requirements received">
+      <bpmn:incoming>MF_1</bpmn:incoming>
+      <bpmn:incoming>MF_2</bpmn:incoming>
+      <bpmn:outgoing>SF_A1</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:task id="Task_DraftPlan" name="Create draft plan">
+      <bpmn:incoming>SF_A1</bpmn:incoming>
+      <bpmn:outgoing>SF_A2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sendTask id="Task_SendDraft" name="Send draft to home-owner">
+      <bpmn:incoming>SF_A2</bpmn:incoming>
+      <bpmn:outgoing>MF_3</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="IC_OrderReceived" name="Order received">
+      <bpmn:incoming>MF_4</bpmn:incoming>
+      <bpmn:outgoing>SF_OS1</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:task id="Task_ProcessOrder" name="Process order">
+      <bpmn:incoming>SF_OS1</bpmn:incoming>
+      <bpmn:outgoing>SF_OS2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sendTask id="Task_ShipMaterials" name="Ship materials">
+      <bpmn:incoming>SF_OS2</bpmn:incoming>
+      <bpmn:outgoing>MF_5</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="IC_BuildInviteReceived" name="Build invite received">
+      <bpmn:incoming>MF_6</bpmn:incoming>
+      <bpmn:outgoing>SF_F1</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:task id="Task_AssistBuild" name="Assist building">
+      <bpmn:incoming>SF_F1</bpmn:incoming>
+    </bpmn:task>
+    <bpmn:intermediateCatchEvent id="IC_PartyInviteReceived" name="Party invite received">
+      <bpmn:incoming>MF_7</bpmn:incoming>
+      <bpmn:outgoing>SF_F2</bpmn:outgoing>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sendTask id="Task_RSVP" name="Send RSVP">
+      <bpmn:incoming>SF_F2</bpmn:incoming>
+      <bpmn:outgoing>MF_8</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sequenceFlow id="SF_1" name="" sourceRef="SE_ProjectStart" targetRef="Task_CollectRequirements" />
+    <bpmn:sequenceFlow id="SF_2" name="" sourceRef="Task_CollectRequirements" targetRef="Task_SendRequirements" />
+    <bpmn:sequenceFlow id="SF_3" name="" sourceRef="Task_SendRequirements" targetRef="Task_ReceiveDraft" />
+    <bpmn:sequenceFlow id="SF_4" name="" sourceRef="Task_ReceiveDraft" targetRef="Gateway_DraftOK" />
+    <bpmn:sequenceFlow id="SF_5" name="Not OK" sourceRef="Gateway_DraftOK" targetRef="Task_RefineRequirements">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">Not OK</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF_6" name="" sourceRef="Task_RefineRequirements" targetRef="Task_SendRefined" />
+    <bpmn:sequenceFlow id="SF_7" name="" sourceRef="Task_SendRefined" targetRef="Task_ReceiveDraft" />
+    <bpmn:sequenceFlow id="SF_8" name="OK" sourceRef="Gateway_DraftOK" targetRef="Task_CreateMaterialsList">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">OK</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SF_9" name="" sourceRef="Task_CreateMaterialsList" targetRef="Task_CategoriseMaterials" />
+    <bpmn:sequenceFlow id="SF_10" name="" sourceRef="Task_CategoriseMaterials" targetRef="Task_OrderMaterials" />
+    <bpmn:sequenceFlow id="SF_11" name="" sourceRef="Task_OrderMaterials" targetRef="IE_MaterialsDelivered" />
+    <bpmn:sequenceFlow id="SF_12" name="" sourceRef="IE_MaterialsDelivered" targetRef="Task_SendBuildMessages" />
+    <bpmn:sequenceFlow id="SF_13" name="" sourceRef="Task_SendBuildMessages" targetRef="Task_BuildTreeHouse" />
+    <bpmn:sequenceFlow id="SF_14" name="" sourceRef="Task_BuildTreeHouse" targetRef="Task_SendPartyInvites" />
+    <bpmn:sequenceFlow id="SF_15" name="" sourceRef="Task_SendPartyInvites" targetRef="Task_CreateAttendeeList" />
+    <bpmn:sequenceFlow id="SF_16" name="" sourceRef="Task_CreateAttendeeList" targetRef="Task_BuySnacks" />
+    <bpmn:sequenceFlow id="SF_17" name="" sourceRef="Task_BuySnacks" targetRef="EE_ProjectComplete" />
+    <bpmn:sequenceFlow id="SF_A1" name="" sourceRef="IC_RequirementsReceived" targetRef="Task_DraftPlan" />
+    <bpmn:sequenceFlow id="SF_A2" name="" sourceRef="Task_DraftPlan" targetRef="Task_SendDraft" />
+    <bpmn:sequenceFlow id="SF_OS1" name="" sourceRef="IC_OrderReceived" targetRef="Task_ProcessOrder" />
+    <bpmn:sequenceFlow id="SF_OS2" name="" sourceRef="Task_ProcessOrder" targetRef="Task_ShipMaterials" />
+    <bpmn:sequenceFlow id="SF_F1" name="" sourceRef="IC_BuildInviteReceived" targetRef="Task_AssistBuild" />
+    <bpmn:sequenceFlow id="SF_F2" name="" sourceRef="IC_PartyInviteReceived" targetRef="Task_RSVP" />
+    <bpmn:sequenceFlow id="MF_1" name="" sourceRef="Task_SendRequirements" targetRef="IC_RequirementsReceived" />
+  </bpmn:process>
+  <bpmn:collaboration id="Collab_1">
+    <bpmn:participant id="Participant_1" name="Tree-house construction and party" processRef="Def_TreeHouseProject" />
+    <bpmn:messageFlow id="MF_2" name="" sourceRef="Task_SendRefined" targetRef="IC_RequirementsReceived" />
+    <bpmn:messageFlow id="MF_3" name="" sourceRef="Task_SendDraft" targetRef="Task_ReceiveDraft" />
+    <bpmn:messageFlow id="MF_4" name="" sourceRef="Task_OrderMaterials" targetRef="IC_OrderReceived" />
+    <bpmn:messageFlow id="MF_5" name="" sourceRef="Task_ShipMaterials" targetRef="IE_MaterialsDelivered" />
+    <bpmn:messageFlow id="MF_6" name="" sourceRef="Task_SendBuildMessages" targetRef="IC_BuildInviteReceived" />
+    <bpmn:messageFlow id="MF_7" name="" sourceRef="Task_SendPartyInvites" targetRef="IC_PartyInviteReceived" />
+    <bpmn:messageFlow id="MF_8" name="" sourceRef="Task_RSVP" targetRef="Task_CreateAttendeeList" />
+  </bpmn:collaboration>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Def_TreeHouseProject">
+    <bpmndi:BPMNPlane id="BPMNPlane_Def_TreeHouseProject" bpmnElement="Def_TreeHouseProject">
+      <bpmndi:BPMNShape id="SE_ProjectStart_di" bpmnElement="SE_ProjectStart">
+        <dc:Bounds x="57" y="52" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CollectRequirements_di" bpmnElement="Task_CollectRequirements">
+        <dc:Bounds x="175" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendRequirements_di" bpmnElement="Task_SendRequirements">
+        <dc:Bounds x="325" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ReceiveDraft_di" bpmnElement="Task_ReceiveDraft">
+        <dc:Bounds x="475" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_DraftOK_di" bpmnElement="Gateway_DraftOK" isMarkerVisible="true">
+        <dc:Bounds x="650" y="45" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RefineRequirements_di" bpmnElement="Task_RefineRequirements">
+        <dc:Bounds x="775" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendRefined_di" bpmnElement="Task_SendRefined">
+        <dc:Bounds x="925" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="IC_OrderReceived_di" bpmnElement="IC_OrderReceived">
+        <dc:Bounds x="57" y="192" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProcessOrder_di" bpmnElement="Task_ProcessOrder">
+        <dc:Bounds x="175" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ShipMaterials_di" bpmnElement="Task_ShipMaterials">
+        <dc:Bounds x="325" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="IC_RequirementsReceived_di" bpmnElement="IC_RequirementsReceived">
+        <dc:Bounds x="507" y="192" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DraftPlan_di" bpmnElement="Task_DraftPlan">
+        <dc:Bounds x="625" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendDraft_di" bpmnElement="Task_SendDraft">
+        <dc:Bounds x="775" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CreateMaterialsList_di" bpmnElement="Task_CreateMaterialsList">
+        <dc:Bounds x="1075" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CategoriseMaterials_di" bpmnElement="Task_CategoriseMaterials">
+        <dc:Bounds x="1225" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_OrderMaterials_di" bpmnElement="Task_OrderMaterials">
+        <dc:Bounds x="1375" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="IE_MaterialsDelivered_di" bpmnElement="IE_MaterialsDelivered">
+        <dc:Bounds x="1557" y="192" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendBuildMessages_di" bpmnElement="Task_SendBuildMessages">
+        <dc:Bounds x="1675" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BuildTreeHouse_di" bpmnElement="Task_BuildTreeHouse">
+        <dc:Bounds x="1825" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendPartyInvites_di" bpmnElement="Task_SendPartyInvites">
+        <dc:Bounds x="1975" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CreateAttendeeList_di" bpmnElement="Task_CreateAttendeeList">
+        <dc:Bounds x="2125" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BuySnacks_di" bpmnElement="Task_BuySnacks">
+        <dc:Bounds x="2275" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EE_ProjectComplete_di" bpmnElement="EE_ProjectComplete">
+        <dc:Bounds x="2457" y="192" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="IC_BuildInviteReceived_di" bpmnElement="IC_BuildInviteReceived">
+        <dc:Bounds x="57" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AssistBuild_di" bpmnElement="Task_AssistBuild">
+        <dc:Bounds x="175" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="IC_PartyInviteReceived_di" bpmnElement="IC_PartyInviteReceived">
+        <dc:Bounds x="57" y="472" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RSVP_di" bpmnElement="Task_RSVP">
+        <dc:Bounds x="175" y="450" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SF_1_di" bpmnElement="SF_1">
+        <di:waypoint x="93" y="70" />
+        <di:waypoint x="175" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_2_di" bpmnElement="SF_2">
+        <di:waypoint x="275" y="70" />
+        <di:waypoint x="325" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_3_di" bpmnElement="SF_3">
+        <di:waypoint x="425" y="70" />
+        <di:waypoint x="475" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_1_di" bpmnElement="MF_1">
+        <di:waypoint x="425" y="70" />
+        <di:waypoint x="450" y="70" />
+        <di:waypoint x="450" y="140" />
+        <di:waypoint x="450" y="140" />
+        <di:waypoint x="450" y="210" />
+        <di:waypoint x="507" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_4_di" bpmnElement="SF_4">
+        <di:waypoint x="575" y="70" />
+        <di:waypoint x="650" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_5_di" bpmnElement="SF_5">
+        <di:waypoint x="700" y="70" />
+        <di:waypoint x="775" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_8_di" bpmnElement="SF_8">
+        <di:waypoint x="700" y="70" />
+        <di:waypoint x="750" y="70" />
+        <di:waypoint x="750" y="140" />
+        <di:waypoint x="1050" y="140" />
+        <di:waypoint x="1050" y="210" />
+        <di:waypoint x="1075" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_6_di" bpmnElement="SF_6">
+        <di:waypoint x="875" y="70" />
+        <di:waypoint x="925" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_7_di" bpmnElement="SF_7">
+        <di:waypoint x="975" y="110" />
+        <di:waypoint x="975" y="140" />
+        <di:waypoint x="525" y="140" />
+        <di:waypoint x="525" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_OS1_di" bpmnElement="SF_OS1">
+        <di:waypoint x="93" y="210" />
+        <di:waypoint x="175" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_OS2_di" bpmnElement="SF_OS2">
+        <di:waypoint x="275" y="210" />
+        <di:waypoint x="325" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_A1_di" bpmnElement="SF_A1">
+        <di:waypoint x="543" y="210" />
+        <di:waypoint x="625" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_A2_di" bpmnElement="SF_A2">
+        <di:waypoint x="725" y="210" />
+        <di:waypoint x="775" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_9_di" bpmnElement="SF_9">
+        <di:waypoint x="1175" y="210" />
+        <di:waypoint x="1225" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_10_di" bpmnElement="SF_10">
+        <di:waypoint x="1325" y="210" />
+        <di:waypoint x="1375" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_11_di" bpmnElement="SF_11">
+        <di:waypoint x="1475" y="210" />
+        <di:waypoint x="1557" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_12_di" bpmnElement="SF_12">
+        <di:waypoint x="1593" y="210" />
+        <di:waypoint x="1675" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_13_di" bpmnElement="SF_13">
+        <di:waypoint x="1775" y="210" />
+        <di:waypoint x="1825" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_14_di" bpmnElement="SF_14">
+        <di:waypoint x="1925" y="210" />
+        <di:waypoint x="1975" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_15_di" bpmnElement="SF_15">
+        <di:waypoint x="2075" y="210" />
+        <di:waypoint x="2125" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_16_di" bpmnElement="SF_16">
+        <di:waypoint x="2225" y="210" />
+        <di:waypoint x="2275" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_17_di" bpmnElement="SF_17">
+        <di:waypoint x="2375" y="210" />
+        <di:waypoint x="2457" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_F1_di" bpmnElement="SF_F1">
+        <di:waypoint x="93" y="350" />
+        <di:waypoint x="175" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SF_F2_di" bpmnElement="SF_F2">
+        <di:waypoint x="93" y="490" />
+        <di:waypoint x="175" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_2_di" bpmnElement="MF_2">
+        <di:waypoint x="975" y="70" />
+        <di:waypoint x="525" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_3_di" bpmnElement="MF_3">
+        <di:waypoint x="825" y="210" />
+        <di:waypoint x="525" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_4_di" bpmnElement="MF_4">
+        <di:waypoint x="1425" y="210" />
+        <di:waypoint x="75" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_5_di" bpmnElement="MF_5">
+        <di:waypoint x="375" y="210" />
+        <di:waypoint x="1575" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_6_di" bpmnElement="MF_6">
+        <di:waypoint x="1725" y="210" />
+        <di:waypoint x="75" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_7_di" bpmnElement="MF_7">
+        <di:waypoint x="2025" y="210" />
+        <di:waypoint x="75" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MF_8_di" bpmnElement="MF_8">
+        <di:waypoint x="225" y="490" />
+        <di:waypoint x="2175" y="210" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

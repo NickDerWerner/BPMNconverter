@@ -1,0 +1,64 @@
+{
+  "name": "bpmn-auto-layout",
+  "version": "1.0.0",
+  "description": "Layout BPMN diagrams, generating missing DI information",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "all": "run-s lint test",
+    "lint": "eslint .",
+    "test": "mocha",
+    "test:inspect": "open test/output/index.html",
+    "test:update-snapshots": "cross-env UPDATE_SNAPSHOTS=true mocha",
+    "pretest": "run-s build",
+    "build": "rollup -c",
+    "build:example": "npm run build -w example",
+    "prepare": "run-s build",
+    "start": "npm run start -w example"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bpmn-io/bpmn-auto-layout.git"
+  },
+  "keywords": [
+    "bpmn",
+    "layout"
+  ],
+  "author": {
+    "name": "bpmn.io contributors",
+    "url": "https://github.com/bpmn-io"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bpmn-io/bpmn-auto-layout/issues"
+  },
+  "homepage": "https://github.com/bpmn-io/bpmn-auto-layout#readme",
+  "dependencies": {
+    "bpmn-moddle": "^9.0.1",
+    "min-dash": "^4.1.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.41.0",
+    "eslint-plugin-bpmn-io": "^1.0.0",
+    "mocha": "^10.2.0",
+    "npm-run-all": "^4.1.5",
+    "open-cli": "^8.0.0",
+    "rollup": "^4.12.1"
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "workspaces": [
+    "example"
+  ]
+}

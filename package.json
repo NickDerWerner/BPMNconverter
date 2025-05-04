@@ -1,0 +1,23 @@
+{
+  "name": "bpmn-converter",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@xmldom/xmldom": "0.9.8",
+    "bpmn-auto-layout": "1.0.0",
+    "bpmn-js": "18.6.1",
+    "bpmn-moddle": "9.0.1",
+    "express": "5.1.0",
+    "jquery": "3.7.1",
+    "xmldom": "0.6.0",
+    "xpath": "0.0.34"
+  }
+}
