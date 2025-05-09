@@ -1,129 +1,81 @@
 {
-    
-      "id": "Def_TreeHouseProject",
-      "name": "Tree-house construction and party",
-      "nodes": [
-        
-        { "id": "SE_ProjectStart",           "type": "startEvent", "name": "Tree-house project initiated", "outgoing": ["SF_1"] },
+    "pools": [
+      {
+        "id":   "Owner",
+        "name": "Project Owner",
+        "nodes": [
+          { "id": "O_1", "name": "Collect requirements",              "type": "task" },
+          { "id": "O_2", "name": "Send requirements to architect",    "type": "task" },
+          { "id": "O_3", "name": "Refine draft",                      "type": "task" },
+          { "id": "O_4", "name": "Create materials list",             "type": "task" },
+          { "id": "O_5", "name": "Categorise materials",              "type": "task" },
+          { "id": "O_6", "name": "Place orders at online stores",     "type": "task" },
+          { "id": "O_7", "name": "Ask friends to build house",        "type": "task" },
+          { "id": "O_8", "name": "Send party invitations",            "type": "task" },
+          { "id": "O_9", "name": "Create attendee list for snacks",   "type": "task" }
+        ],
+        "flows": [
+          { "id": "F_O1", "source": "O_1", "target": "O_2" },
+          { "id": "F_O2", "source": "O_2", "target": "O_3" },
+          { "id": "F_O3", "source": "O_3", "target": "O_4" },
+          { "id": "F_O4", "source": "O_4", "target": "O_5" },
+          { "id": "F_O5", "source": "O_5", "target": "O_6" },
+          { "id": "F_O6", "source": "O_6", "target": "O_7" },
+          { "id": "F_O7", "source": "O_7", "target": "O_8" },
+          { "id": "F_O8", "source": "O_8", "target": "O_9" }
+        ]
+      },
   
-        { "id": "Task_CollectRequirements",  "type": "task",       "taskType": "userTask",
-          "name": "Collect requirements",    "incoming": ["SF_1"], "outgoing": ["SF_2"] },
+      {
+        "id":   "Architect",
+        "name": "Tree‑house Architect",
+        "nodes": [
+          { "id": "A_1", "name": "Receive requirements", "type": "task" },
+          { "id": "A_2", "name": "Draft tree‑house plan", "type": "task" },
+          { "id": "A_3", "name": "Send draft to owner",  "type": "task" }
+        ],
+        "flows": [
+          { "id": "F_A1", "source": "A_1", "target": "A_2" },
+          { "id": "F_A2", "source": "A_2", "target": "A_3" }
+        ]
+      },
   
-        { "id": "Task_SendRequirements",     "type": "sendTask",   "name": "Send requirements to architect",
-          "incoming": ["SF_2"],              "outgoing": ["SF_3", "MF_1"] },
+      {
+        "id":   "Store",
+        "name": "Online Store",
+        "nodes": [
+          { "id": "S_1", "name": "Receive materials order", "type": "task" },
+          { "id": "S_2", "name": "Process / ship order",    "type": "task" }
+        ],
+        "flows": [
+          { "id": "F_S1", "source": "S_1", "target": "S_2" }
+        ]
+      },
   
-        { "id": "Task_ReceiveDraft",         "type": "receiveTask","name": "Receive architect draft",
-          "incoming": ["SF_3", "MF_3"],      "outgoing": ["SF_4"] },
+      {
+        "id":   "Friends",
+        "name": "Friends",
+        "nodes": [
+          { "id": "F_1", "name": "Receive build request", "type": "task" },
+          { "id": "F_2", "name": "Build tree house",      "type": "task" },
+          { "id": "F_3", "name": "Receive invitation",    "type": "task" },
+          { "id": "F_4", "name": "Attend party",          "type": "task" }
+        ],
+        "flows": [
+          { "id": "F_F1", "source": "F_1", "target": "F_2" },
+          { "id": "F_F2", "source": "F_2", "target": "F_3" },
+          { "id": "F_F3", "source": "F_3", "target": "F_4" }
+        ]
+      }
+    ],
   
-        { "id": "Gateway_DraftOK",           "type": "exclusiveGateway", "name": "Draft satisfactory?",
-          "gatewayDirection": "Diverging",   "incoming": ["SF_4"], "outgoing": ["SF_5", "SF_8"] },
-  
-        { "id": "Task_RefineRequirements",   "type": "task",       "taskType": "userTask",
-          "name": "Refine requirements",     "incoming": ["SF_5"], "outgoing": ["SF_6"] },
-  
-        { "id": "Task_SendRefined",          "type": "sendTask",   "name": "Send refined requirements",
-          "incoming": ["SF_6"],              "outgoing": ["SF_7", "MF_2"] },
-  
-        { "id": "Task_CreateMaterialsList",  "type": "task",       "taskType": "userTask",
-          "name": "Create list of materials", "incoming": ["SF_8"], "outgoing": ["SF_9"] },
-  
-        { "id": "Task_CategoriseMaterials",  "type": "task",       "taskType": "userTask",
-          "name": "Categorise materials",    "incoming": ["SF_9"], "outgoing": ["SF_10"] },
-  
-        { "id": "Task_OrderMaterials",       "type": "sendTask",   "name": "Order materials (multi-store)",
-          "incoming": ["SF_10"],             "outgoing": ["SF_11", "MF_4"] },
-  
-        { "id": "IE_MaterialsDelivered",     "type": "intermediateCatchEvent",
-          "name": "Materials delivered",     "eventDefinition": "message",
-          "incoming": ["SF_11", "MF_5"],     "outgoing": ["SF_12"] },
-  
-        { "id": "Task_SendBuildMessages",    "type": "sendTask",   "name": "Ask friends to help build",
-          "incoming": ["SF_12"],             "outgoing": ["SF_13", "MF_6"] },
-  
-        { "id": "Task_BuildTreeHouse",       "type": "manualTask", "name": "Build tree-house",
-          "incoming": ["SF_13"],             "outgoing": ["SF_14"] },
-  
-        { "id": "Task_SendPartyInvites",     "type": "sendTask",   "name": "Send party invitations",
-          "incoming": ["SF_14"],             "outgoing": ["SF_15", "MF_7"] },
-  
-        { "id": "Task_CreateAttendeeList",   "type": "receiveTask","name": "Compile attendee list",
-          "incoming": ["SF_15", "MF_8"],     "outgoing": ["SF_16"] },
-  
-        { "id": "Task_BuySnacks",            "type": "serviceTask","name": "Buy snacks for party",
-          "incoming": ["SF_16"],             "outgoing": ["SF_17"] },
-  
-        { "id": "EE_ProjectComplete",        "type": "endEvent",   "name": "Project complete",
-          "incoming": ["SF_17"] },
-  
-        { "id": "IC_RequirementsReceived",   "type": "intermediateCatchEvent",
-          "name": "Requirements received",   "eventDefinition": "message", "incoming": ["MF_1", "MF_2"], "outgoing": ["SF_A1"] },
-  
-        { "id": "Task_DraftPlan",            "type": "task",       "taskType": "serviceTask",
-          "name": "Create draft plan",       "incoming": ["SF_A1"], "outgoing": ["SF_A2"] },
-  
-        { "id": "Task_SendDraft",            "type": "sendTask",   "name": "Send draft to home-owner",
-          "incoming": ["SF_A2"],             "outgoing": ["MF_3"] },
-  
-        { "id": "IC_OrderReceived",          "type": "intermediateCatchEvent",
-          "name": "Order received",          "eventDefinition": "message", "incoming": ["MF_4"], "outgoing": ["SF_OS1"] },
-  
-        { "id": "Task_ProcessOrder",         "type": "task",       "taskType": "serviceTask",
-          "name": "Process order",           "incoming": ["SF_OS1"], "outgoing": ["SF_OS2"] },
-  
-        { "id": "Task_ShipMaterials",        "type": "sendTask",   "name": "Ship materials",
-          "incoming": ["SF_OS2"],            "outgoing": ["MF_5"] },
-  
-        { "id": "IC_BuildInviteReceived",    "type": "intermediateCatchEvent",
-          "name": "Build invite received",   "eventDefinition": "message", "incoming": ["MF_6"], "outgoing": ["SF_F1"] },
-  
-        { "id": "Task_AssistBuild",          "type": "task",       "taskType": "manualTask",
-          "name": "Assist building",         "incoming": ["SF_F1"] },
-  
-        { "id": "IC_PartyInviteReceived",    "type": "intermediateCatchEvent",
-          "name": "Party invite received",   "eventDefinition": "message", "incoming": ["MF_7"], "outgoing": ["SF_F2"] },
-  
-        { "id": "Task_RSVP",                 "type": "sendTask",   "name": "Send RSVP",
-          "incoming": ["SF_F2"],             "outgoing": ["MF_8"] }
-      ],
-  
-      "flows": [
-        { "id": "SF_1",  "type": "sequenceFlow", "source": "SE_ProjectStart",        "target": "Task_CollectRequirements" },
-        { "id": "SF_2",  "type": "sequenceFlow", "source": "Task_CollectRequirements","target": "Task_SendRequirements" },
-        { "id": "SF_3",  "type": "sequenceFlow", "source": "Task_SendRequirements",  "target": "Task_ReceiveDraft" },
-        { "id": "SF_4",  "type": "sequenceFlow", "source": "Task_ReceiveDraft",      "target": "Gateway_DraftOK" },
-        { "id": "SF_5",  "type": "sequenceFlow", "source": "Gateway_DraftOK",        "target": "Task_RefineRequirements", "condition": "Not OK" },
-        { "id": "SF_6",  "type": "sequenceFlow", "source": "Task_RefineRequirements","target": "Task_SendRefined" },
-        { "id": "SF_7",  "type": "sequenceFlow", "source": "Task_SendRefined",       "target": "Task_ReceiveDraft" },
-        { "id": "SF_8",  "type": "sequenceFlow", "source": "Gateway_DraftOK",        "target": "Task_CreateMaterialsList", "condition": "OK" },
-        { "id": "SF_9",  "type": "sequenceFlow", "source": "Task_CreateMaterialsList","target": "Task_CategoriseMaterials" },
-        { "id": "SF_10", "type": "sequenceFlow", "source": "Task_CategoriseMaterials","target": "Task_OrderMaterials" },
-        { "id": "SF_11", "type": "sequenceFlow", "source": "Task_OrderMaterials",    "target": "IE_MaterialsDelivered" },
-        { "id": "SF_12", "type": "sequenceFlow", "source": "IE_MaterialsDelivered",  "target": "Task_SendBuildMessages" },
-        { "id": "SF_13", "type": "sequenceFlow", "source": "Task_SendBuildMessages", "target": "Task_BuildTreeHouse" },
-        { "id": "SF_14", "type": "sequenceFlow", "source": "Task_BuildTreeHouse",    "target": "Task_SendPartyInvites" },
-        { "id": "SF_15", "type": "sequenceFlow", "source": "Task_SendPartyInvites",  "target": "Task_CreateAttendeeList" },
-        { "id": "SF_16", "type": "sequenceFlow", "source": "Task_CreateAttendeeList","target": "Task_BuySnacks" },
-        { "id": "SF_17", "type": "sequenceFlow", "source": "Task_BuySnacks",         "target": "EE_ProjectComplete" },
-  
-        { "id": "SF_A1", "type": "sequenceFlow", "source": "IC_RequirementsReceived","target": "Task_DraftPlan" },
-        { "id": "SF_A2", "type": "sequenceFlow", "source": "Task_DraftPlan",        "target": "Task_SendDraft" },
-  
-        { "id": "SF_OS1","type": "sequenceFlow", "source": "IC_OrderReceived",      "target": "Task_ProcessOrder" },
-        { "id": "SF_OS2","type": "sequenceFlow", "source": "Task_ProcessOrder",     "target": "Task_ShipMaterials" },
-  
-        { "id": "SF_F1", "type": "sequenceFlow", "source": "IC_BuildInviteReceived","target": "Task_AssistBuild" },
-        { "id": "SF_F2", "type": "sequenceFlow", "source": "IC_PartyInviteReceived","target": "Task_RSVP" },
-  
-        { "id": "MF_1",  "type": "MessageFlow",  "source": "Task_SendRequirements", "target": "IC_RequirementsReceived" },
-        { "id": "MF_2",  "type": "messageFlow",  "source": "Task_SendRefined",      "target": "IC_RequirementsReceived" },
-        { "id": "MF_3",  "type": "messageFlow",  "source": "Task_SendDraft",        "target": "Task_ReceiveDraft" },
-        { "id": "MF_4",  "type": "messageFlow",  "source": "Task_OrderMaterials",   "target": "IC_OrderReceived" },
-        { "id": "MF_5",  "type": "messageFlow",  "source": "Task_ShipMaterials",    "target": "IE_MaterialsDelivered" },
-        { "id": "MF_6",  "type": "messageFlow",  "source": "Task_SendBuildMessages","target": "IC_BuildInviteReceived" },
-        { "id": "MF_7",  "type": "messageFlow",  "source": "Task_SendPartyInvites", "target": "IC_PartyInviteReceived" },
-        { "id": "MF_8",  "type": "messageFlow",  "source": "Task_RSVP",             "target": "Task_CreateAttendeeList" }
-      ]
-  
-    
+    "crossFlows": [
+      { "id": "MF_1", "source": "O_2", "target": "A_1", "name": "Requirements" },
+      { "id": "MF_2", "source": "A_3", "target": "O_3", "name": "Draft plan" },
+      { "id": "MF_3", "source": "O_6", "target": "S_1", "name": "Materials order" },
+      { "id": "MF_4", "source": "O_7", "target": "F_1", "name": "Please help build" },
+      { "id": "MF_5", "source": "O_8", "target": "F_3", "name": "Party invitation" },
+      { "id": "MF_6", "source": "F_3", "target": "O_9", "name": "RSVP" }
+    ]
   }
   

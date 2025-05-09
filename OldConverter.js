@@ -1,4 +1,4 @@
-/* converter.js — JSON ➜ BPMN 2.0 XML + DI (sequence + message + data‑associations, multi‑pool)
+/* converter.js — JSON ➜ BPMN 2.0 XML + DI (sequence + message flows, multi‑pool)
    prerequisites:
      npm i bpmn-moddle bpmn-auto-layout
    ensure package.json contains: "type": "module"
@@ -15,18 +15,11 @@ import fs                from 'node:fs/promises';
 
 /* 1 ─── load structured JSON ──────────────────────────────────── */
 const processJson = JSON.parse(
-  await fs.readFile(new URL('./dataObject.json', import.meta.url))
+  await fs.readFile(new URL('./test.json', import.meta.url))
 );
 
 /* 2 ─── helpers ───────────────────────────────────────────────── */
 const capitalize = s => s[0].toUpperCase() + s.slice(1);
-
-/* JSON → BPMN node‑name map for the few types that do not match a simple capitalise() */
-const NODE_TYPE_MAP = {
-  dataobject:          'DataObjectReference',
-  dataobjectreference: 'DataObjectReference',
-  datastore:           'DataStoreReference'
-};
 
 function wire(flow, source, target) {
   (source.outgoing = source.outgoing || []).push(flow);
@@ -88,8 +81,8 @@ const pools = Array.isArray(processJson.pools)
       flows: processJson.flows ?? []
     }];
 
-const byId             = {}; // ANY BPM element id → element
-const poolOfNode       = {}; // node id → pool id
+const byId            = {};  // ANY BPM element id → element
+const poolOfNode      = {};  // node id → pool id
 const messageFlowSpecs = Array.isArray(processJson.crossFlows) ? [...processJson.crossFlows] : [];
 
 /* 5 ─── create one <Process> per pool + its nodes ─────────────── */
@@ -102,21 +95,32 @@ for (const pool of pools) {
     isExecutable: true,
     flowElements: []
   });
-
   definitions.get('rootElements').push(processEl);
   processByPool[pool.id] = processEl;
 
   for (const n of pool.nodes) {
-    const bpmnName = NODE_TYPE_MAP[n.type.toLowerCase()] ?? capitalize(n.type);
-    const el = moddle.create(`bpmn:${bpmnName}`, {
+    /* basic BPMN element for the node */
+    const el = moddle.create(`bpmn:${capitalize(n.type)}`, {
       id:   n.id,
-      name: n.name,
-      ...(n.isCollection != null && { isCollection: n.isCollection })
+      name: n.name
     });
 
-    /* optional eventDefinitionType */
+    /* attach an event definition if the JSON specifies one */
     if (n.eventDefinitionType) {
-      const evDef = moddle.create(`bpmn:${capitalize(n.eventDefinitionType)}`, {});
+      // ① create the empty event definition (Message-, Timer-, …)
+      const evDef = moddle.create(n.eventDefinitionType, {});
+
+      // ② for message events keep a concrete <bpmn:message> (optional)
+      if (n.eventDefinitionType === 'bpmn:MessageEventDefinition' && n.message) {
+        const msg = moddle.create('bpmn:Message', {
+          id:   `${capitalize(n.message)}_msg`,
+          name: n.message
+        });
+        definitions.get('rootElements').push(msg);
+        evDef.messageRef = msg;          // reference the object, not the id
+      }
+
+      // ③ wire the definition to the event element
       el.eventDefinitions = [ evDef ];
     }
 
@@ -129,35 +133,12 @@ for (const pool of pools) {
 /* 6 ─── intra‑ vs cross‑pool flows (store cross for later) ───── */
 for (const pool of pools) {
   for (const f of pool.flows) {
-    const crossPool   = poolOfNode[f.source] !== poolOfNode[f.target];
-    const isMsgFlow   = f.type === 'messageFlow';
-    const isDataAssoc = /data(Input|Output)?Association/i.test(f.type);
-
-    if (crossPool || isMsgFlow) {
+    const crossPool = poolOfNode[f.source] !== poolOfNode[f.target];
+    if (crossPool || f.type === 'messageFlow') {
       messageFlowSpecs.push(f);
       continue;
     }
 
-    if (isDataAssoc) {
-      /* DataInputAssociation / DataOutputAssociation */
-      const src        = byId[f.source];
-      const tgt        = byId[f.target];
-      const assocType  = /output/i.test(f.type)
-                         ? 'DataOutputAssociation'
-                         : 'DataInputAssociation';
-
-      const assoc = moddle.create(`bpmn:${assocType}`, {
-        id:        f.id,
-        sourceRef: [src],
-        targetRef: tgt
-      });
-      processByPool[pool.id].flowElements.push(assoc);
-      wire(assoc, src, tgt);
-      byId[assoc.id] = assoc;
-      continue;
-    }
-
-    /* normal sequence flow */
     const seq = moddle.create('bpmn:SequenceFlow', {
       id:        f.id,
       name:      f.condition || '',
@@ -219,18 +200,19 @@ for (const pool of pools) {
     }
   });
 
-  /* participant (pool) */
-  const participant = moddle.create('bpmn:Participant', {
+   /* participant (pool) */
+   const participant = moddle.create('bpmn:Participant', {
     id:         `Part_${pool.id}`,
     name:       pool.name,
     processRef: proc
   });
   collaboration.participants.push(participant);
 
-  /* bounding box for this pool - account for extra LEFT padding */
+  /* bounding box for this pool – account for extra LEFT padding */
   const nodeShapes = plane.planeElement.filter(
     s => s.$type === 'bpmndi:BPMNShape' && pool.nodes.some(n => n.id === s.bpmnElement.id)
   );
+
   const minX = Math.min(...nodeShapes.map(s => s.bounds.x)) - (30 + LEFT_POOL_PADDING);
   const minY = Math.min(...nodeShapes.map(s => s.bounds.y)) - 30;
   const maxX = Math.max(...nodeShapes.map(s => s.bounds.x + s.bounds.width)) + 30;
@@ -296,5 +278,6 @@ for (const mf of messageFlowSpecs) {
 
 /* 9 ─── final serialisation + save ───────────────────────────── */
 const { xml: finalXml } = await moddle.toXML(definitions, { format: true });
-await fs.writeFile('diagram.bpmn', finalXml);
-console.log('✅  Layouted diagram (multiple pools, data objects) saved to diagram.bpmn');
+await fs.writeFile('diagram.bpmn', finalXml, 'utf8');
+console.log('✅  Layouted diagram (multiple pools) saved to diagram.bpmn');
+

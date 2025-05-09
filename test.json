@@ -1,0 +1,23 @@
+{
+  "pools": [{
+    "id": "Pool_1",
+    "name": "Sales",
+    "nodes": [
+      {
+        "id":   "Start_OrderReceived",
+        "type": "startEvent",
+        "name": "Order received",
+        "eventDefinitionType": "bpmn:MessageEventDefinition",
+        "message": "OrderReceived"     
+      },
+      {
+        "id":   "Task_Check",
+        "type": "task",
+        "name": "Check availability"
+      }
+    ],
+    "flows": [
+      { "id": "flow_1", "source": "Start_OrderReceived", "target": "Task_Check" }
+    ]
+  }]
+}

@@ -1,0 +1,16 @@
+{
+    "pools": [
+      {
+        "id": "Pool_1",
+        "name": "Main pool",
+        "nodes": [
+          { "id": "Task_A", "type": "task",  "name": "Do work" },
+          { "id": "Doc_1",  "type": "dataObject", "name": "Report", "isCollection": false }
+        ],
+        "flows": [
+          { "id": "OA_1", "type": "dataOutputAssociation", "source": "Task_A", "target": "Doc_1" }
+        ]
+      }
+    ]
+  }
+  
