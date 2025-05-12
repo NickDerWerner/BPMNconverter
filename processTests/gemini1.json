@@ -9,7 +9,6 @@
           { "id": "DataObject_Requirements", "type": "dataobject", "name": "Requirements" },
           { "id": "Task_SendRequirements", "type": "serviceTask", "name": "Send Requirements to Architect" },
           { "id": "ReceiveTask_ReceiveDraft", "type": "receiveTask", "name": "Receive Draft from Architect" },
-          { "id": "DataObject_DraftPlan", "type": "dataobject", "name": "Draft Plan" },
           { "id": "Task_RefineDraft", "type": "userTask", "name": "Refine Draft" },
           { "id": "ExclusiveGateway_DraftFinal", "type": "exclusiveGateway", "name": "Draft Final?" },
           { "id": "Task_SendRefinedRequirements", "type": "serviceTask", "name": "Send Refined Requirements" },
@@ -22,7 +21,6 @@
           { "id": "Task_BuildTreeHouse", "type": "manualTask", "name": "Build Tree House" },
           { "id": "Task_SendPartyInvitations", "type": "serviceTask", "name": "Send Party Invitations" },
           { "id": "ReceiveTask_ReceivePartyResponses", "type": "receiveTask", "name": "Receive Party Responses" },
-          { "id": "DataObject_PartyResponses", "type": "dataobject", "name": "Party Responses", "isCollection": true },
           { "id": "Task_CreateAttendeeList", "type": "userTask", "name": "Create Attendee List" },
           { "id": "DataObject_AttendeeList", "type": "dataobject", "name": "Attendee List", "isCollection": true },
           { "id": "EndEvent_ProcessEnd", "type": "endEvent", "name": "Tree House Built & Party Planned" }
@@ -34,7 +32,6 @@
           { "id": "DIA_Requirements_SendReq", "source": "DataObject_Requirements", "target": "Task_SendRequirements", "type": "dataInputAssociation" },
           { "id": "Msg_SendReq_ArchitectStart", "source": "Task_SendRequirements", "target": "StartEvent_ArchitectReceiveReq", "type": "messageFlow", "name": "Send Requirements" },
           { "id": "Seq_SendReq_ReceiveDraft", "source": "Task_SendRequirements", "target": "ReceiveTask_ReceiveDraft", "type": "sequenceFlow" },
-          { "id": "DIA_Draft_Refine", "source": "DataObject_DraftPlan", "target": "Task_RefineDraft", "type": "dataInputAssociation" },
           { "id": "Seq_ReceiveDraft_Refine", "source": "ReceiveTask_ReceiveDraft", "target": "Task_RefineDraft", "type": "sequenceFlow" },
           { "id": "Seq_Refine_Gateway", "source": "Task_RefineDraft", "target": "ExclusiveGateway_DraftFinal", "type": "sequenceFlow" },
           { "id": "Seq_Gateway_SendRefined", "source": "ExclusiveGateway_DraftFinal", "target": "Task_SendRefinedRequirements", "type": "sequenceFlow", "condition": "Needs Refinement" },
@@ -68,6 +65,8 @@
           { "id": "StartEvent_ArchitectReceiveReq", "type": "startEvent", "name": "Receive Requirements", "eventDefinitionType": "message" },
           { "id": "Task_DraftPlan", "type": "serviceTask", "name": "Draft Plan" },
           { "id": "IntermediateCatchEvent_ArchitectReceiveRefined", "type": "intermediateCatchEvent", "name": "Receive Refined Req.", "eventDefinitionType": "message" },
+          { "id": "DataObject_DraftPlan", "type": "dataobject", "name": "Draft Plan" },
+
           { "id": "EndEvent_ArchitectEnd", "type": "endEvent", "name": "Drafting Complete" }
         ],
         "flows": [
@@ -76,6 +75,8 @@
           { "id": "Msg_ArchitectSendDraft_Homeowner", "source": "Task_DraftPlan", "target": "ReceiveTask_ReceiveDraft", "type": "messageFlow", "name": "Send Draft" },
           { "id": "Seq_ArchitectDraft_Catch", "source": "Task_DraftPlan", "target": "IntermediateCatchEvent_ArchitectReceiveRefined", "type": "sequenceFlow" },
           { "id": "Seq_ArchitectCatch_Draft", "source": "IntermediateCatchEvent_ArchitectReceiveRefined", "target": "Task_DraftPlan", "type": "sequenceFlow" },
+          { "id": "DIA_Draft_Refine", "source": "DataObject_DraftPlan", "target": "Task_RefineDraft", "type": "dataInputAssociation" },
+
            { "id": "Seq_ArchitectDraft_End", "source": "Task_DraftPlan", "target": "EndEvent_ArchitectEnd", "type": "sequenceFlow" }
         ]
       },
@@ -102,6 +103,8 @@
           { "id": "StartEvent_FriendsReceiveInvite", "type": "startEvent", "name": "Receive Party Invitation", "eventDefinitionType": "message" },
           { "id": "Task_RespondToInvite", "type": "userTask", "name": "Respond to Invitation" },
           { "id": "Task_SendResponse", "type": "serviceTask", "name": "Send Response" },
+          { "id": "DataObject_PartyResponses", "type": "dataobject", "name": "Party Responses", "isCollection": true },
+
           { "id": "EndEvent_FriendsPartyEnd", "type": "endEvent", "name": "Response Sent" }
         ],
         "flows": [

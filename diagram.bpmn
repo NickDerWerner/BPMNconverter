@@ -7,12 +7,13 @@
     <bpmn:participant id="Part_Pool_Friends" name="Friends" processRef="Proc_Pool_Friends" />
     <bpmn:messageFlow id="Msg_SendReq_ArchitectStart" name="Send Requirements" sourceRef="Task_SendRequirements" targetRef="StartEvent_ArchitectReceiveReq" />
     <bpmn:messageFlow id="Msg_SendRefined_ArchitectCatch" name="Send Refinements" sourceRef="Task_SendRefinedRequirements" targetRef="IntermediateCatchEvent_ArchitectReceiveRefined" />
+    <bpmn:messageFlow id="DIA_Draft_CreateList" name="" sourceRef="DataObject_DraftPlan" targetRef="Task_CreateMaterialList" />
     <bpmn:messageFlow id="Msg_Order_Stores" name="Place Order" sourceRef="Task_OrderMaterials" targetRef="StartEvent_StoresReceiveOrder" />
     <bpmn:messageFlow id="Msg_Coordinate_FriendsHelp" name="Request Help" sourceRef="Task_CoordinateBuildingHelp" targetRef="StartEvent_FriendsReceiveHelpReq" />
     <bpmn:messageFlow id="Msg_SendInvites_FriendsParty" name="Send Invitation" sourceRef="Task_SendPartyInvitations" targetRef="StartEvent_FriendsReceiveInvite" />
-    <bpmn:messageFlow id="DOA_ArchitectDraft_Draft" name="" sourceRef="Task_DraftPlan" targetRef="DataObject_DraftPlan" />
+    <bpmn:messageFlow id="DIA_Responses_CreateList" name="" sourceRef="DataObject_PartyResponses" targetRef="Task_CreateAttendeeList" />
     <bpmn:messageFlow id="Msg_ArchitectSendDraft_Homeowner" name="Send Draft" sourceRef="Task_DraftPlan" targetRef="ReceiveTask_ReceiveDraft" />
-    <bpmn:messageFlow id="DOA_FriendsRespond_Responses" name="" sourceRef="Task_RespondToInvite" targetRef="DataObject_PartyResponses" />
+    <bpmn:messageFlow id="DIA_Draft_Refine" name="" sourceRef="DataObject_DraftPlan" targetRef="Task_RefineDraft" />
     <bpmn:messageFlow id="Msg_FriendsSendResponse_Homeowner" name="Send Response" sourceRef="Task_SendResponse" targetRef="ReceiveTask_ReceivePartyResponses" />
   </bpmn:collaboration>
   <bpmn:process id="Proc_Pool_Homeowner" name="Homeowner" isExecutable="true">
@@ -37,11 +38,9 @@
       <bpmn:incoming>Seq_SendRefined_ReceiveDraft</bpmn:incoming>
       <bpmn:outgoing>Seq_ReceiveDraft_Refine</bpmn:outgoing>
     </bpmn:receiveTask>
-    <bpmn:dataObjectReference id="DataObject_DraftPlan" name="Draft Plan" />
     <bpmn:userTask id="Task_RefineDraft" name="Refine Draft">
       <bpmn:incoming>Seq_ReceiveDraft_Refine</bpmn:incoming>
       <bpmn:outgoing>Seq_Refine_Gateway</bpmn:outgoing>
-      <bpmn:dataInputAssociation id="DIA_Draft_Refine" />
     </bpmn:userTask>
     <bpmn:exclusiveGateway id="ExclusiveGateway_DraftFinal" name="Draft Final?">
       <bpmn:incoming>Seq_Refine_Gateway</bpmn:incoming>
@@ -55,7 +54,6 @@
     <bpmn:userTask id="Task_CreateMaterialList" name="Create Material List">
       <bpmn:incoming>Seq_Gateway_CreateList</bpmn:incoming>
       <bpmn:outgoing>Seq_CreateList_ParallelSplit</bpmn:outgoing>
-      <bpmn:dataInputAssociation id="DIA_Draft_CreateList" />
       <bpmn:dataOutputAssociation id="DOA_CreateList_MaterialList">
         <bpmn:targetRef>DataObject_MaterialList</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
@@ -92,11 +90,9 @@
       <bpmn:incoming>Seq_SendInvites_ReceiveResponses</bpmn:incoming>
       <bpmn:outgoing>Seq_ReceiveResponses_CreateList</bpmn:outgoing>
     </bpmn:receiveTask>
-    <bpmn:dataObjectReference id="DataObject_PartyResponses" name="Party Responses" isCollection="true" />
     <bpmn:userTask id="Task_CreateAttendeeList" name="Create Attendee List">
       <bpmn:incoming>Seq_ReceiveResponses_CreateList</bpmn:incoming>
       <bpmn:outgoing>Seq_CreateList_End</bpmn:outgoing>
-      <bpmn:dataInputAssociation id="DIA_Responses_CreateList" />
       <bpmn:dataOutputAssociation id="DOA_CreateList_AttendeeList">
         <bpmn:targetRef>DataObject_AttendeeList</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
@@ -138,12 +134,16 @@
       <bpmn:incoming>Seq_ArchitectCatch_Draft</bpmn:incoming>
       <bpmn:outgoing>Seq_ArchitectDraft_Catch</bpmn:outgoing>
       <bpmn:outgoing>Seq_ArchitectDraft_End</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DOA_ArchitectDraft_Draft">
+        <bpmn:targetRef>DataObject_DraftPlan</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
     </bpmn:serviceTask>
     <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_ArchitectReceiveRefined" name="Receive Refined Req.">
       <bpmn:incoming>Seq_ArchitectDraft_Catch</bpmn:incoming>
       <bpmn:outgoing>Seq_ArchitectCatch_Draft</bpmn:outgoing>
       <bpmn:message />
     </bpmn:intermediateCatchEvent>
+    <bpmn:dataObjectReference id="DataObject_DraftPlan" name="Draft Plan" />
     <bpmn:endEvent id="EndEvent_ArchitectEnd" name="Drafting Complete">
       <bpmn:incoming>Seq_ArchitectDraft_End</bpmn:incoming>
     </bpmn:endEvent>
@@ -186,11 +186,15 @@
     <bpmn:userTask id="Task_RespondToInvite" name="Respond to Invitation">
       <bpmn:incoming>Seq_FriendsPartyStart_Respond</bpmn:incoming>
       <bpmn:outgoing>Seq_FriendsRespond_SendResponse</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DOA_FriendsRespond_Responses">
+        <bpmn:targetRef>DataObject_PartyResponses</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
     </bpmn:userTask>
     <bpmn:serviceTask id="Task_SendResponse" name="Send Response">
       <bpmn:incoming>Seq_FriendsRespond_SendResponse</bpmn:incoming>
       <bpmn:outgoing>Seq_FriendsSendResponse_PartyEnd</bpmn:outgoing>
     </bpmn:serviceTask>
+    <bpmn:dataObjectReference id="DataObject_PartyResponses" name="Party Responses" isCollection="true" />
     <bpmn:endEvent id="EndEvent_FriendsPartyEnd" name="Response Sent">
       <bpmn:incoming>Seq_FriendsSendResponse_PartyEnd</bpmn:incoming>
     </bpmn:endEvent>
@@ -203,16 +207,16 @@
   <bpmndi:BPMNDiagram id="Diagram_1">
     <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Collab_1">
       <bpmndi:BPMNShape id="Part_Pool_Friends_di" bpmnElement="Part_Pool_Friends" isHorizontal="true">
-        <dc:Bounds x="27" y="1403" width="576" height="280" />
+        <dc:Bounds x="27" y="1130" width="576" height="405" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Part_Pool_OnlineStores_di" bpmnElement="Part_Pool_OnlineStores" isHorizontal="true">
-        <dc:Bounds x="27" y="1203" width="426" height="140" />
+        <dc:Bounds x="27" y="930" width="426" height="140" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Part_Pool_Architect_di" bpmnElement="Part_Pool_Architect" isHorizontal="true">
-        <dc:Bounds x="27" y="885" width="426" height="258" />
+        <dc:Bounds x="27" y="605" width="426" height="265" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Part_Pool_Homeowner_di" bpmnElement="Part_Pool_Homeowner" isHorizontal="true">
-        <dc:Bounds x="27" y="0" width="2226" height="825" />
+        <dc:Bounds x="27" y="0" width="2226" height="545" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_Process_di_g" bpmnElement="StartEvent_Process">
         <dc:Bounds x="87" y="52" width="36" height="36" />
@@ -236,7 +240,7 @@
         <dc:Bounds x="955" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataObject_Requirements_di_g" bpmnElement="DataObject_Requirements">
-        <dc:Bounds x="345" y="45" width="36" height="50" />
+        <dc:Bounds x="237" y="150" width="36" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_CreateMaterialList_di_g" bpmnElement="Task_CreateMaterialList">
         <dc:Bounds x="955" y="170" width="100" height="80" />
@@ -265,20 +269,14 @@
       <bpmndi:BPMNShape id="EndEvent_ProcessEnd_di_g" bpmnElement="EndEvent_ProcessEnd">
         <dc:Bounds x="2187" y="192" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DataObject_DraftPlan_di_g" bpmnElement="DataObject_DraftPlan">
-        <dc:Bounds x="687" y="150" width="36" height="50" />
+      <bpmndi:BPMNShape id="DataObject_MaterialList_di_g" bpmnElement="DataObject_MaterialList">
+        <dc:Bounds x="987" y="290" width="36" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_CoordinateBuildingHelp_di_g" bpmnElement="Task_CoordinateBuildingHelp">
         <dc:Bounds x="1255" y="310" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DataObject_MaterialList_di_g" bpmnElement="DataObject_MaterialList">
-        <dc:Bounds x="1095" y="185" width="36" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DataObject_PartyResponses_di_g" bpmnElement="DataObject_PartyResponses">
-        <dc:Bounds x="2037" y="290" width="36" height="50" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataObject_AttendeeList_di_g" bpmnElement="DataObject_AttendeeList">
-        <dc:Bounds x="2145" y="185" width="36" height="50" />
+        <dc:Bounds x="2037" y="290" width="36" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Seq_Start_Collect_di_g" bpmnElement="Seq_Start_Collect">
         <di:waypoint x="123" y="70" />
@@ -358,159 +356,165 @@
         <di:waypoint x="1455" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="StartEvent_ArchitectReceiveReq_di_g" bpmnElement="StartEvent_ArchitectReceiveReq">
-        <dc:Bounds x="87" y="937" width="36" height="36" />
+        <dc:Bounds x="87" y="657" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_DraftPlan_di_g" bpmnElement="Task_DraftPlan">
-        <dc:Bounds x="205" y="915" width="100" height="80" />
+        <dc:Bounds x="205" y="635" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="IntermediateCatchEvent_ArchitectReceiveRefined_di_g" bpmnElement="IntermediateCatchEvent_ArchitectReceiveRefined">
-        <dc:Bounds x="387" y="937" width="36" height="36" />
+        <dc:Bounds x="387" y="657" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_DraftPlan_di_g" bpmnElement="DataObject_DraftPlan">
+        <dc:Bounds x="237" y="755" width="36" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_ArchitectEnd_di_g" bpmnElement="EndEvent_ArchitectEnd">
-        <dc:Bounds x="387" y="1077" width="36" height="36" />
+        <dc:Bounds x="387" y="797" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Seq_ArchitectStart_Draft_di_g" bpmnElement="Seq_ArchitectStart_Draft">
-        <di:waypoint x="123" y="955" />
-        <di:waypoint x="205" y="955" />
+        <di:waypoint x="123" y="675" />
+        <di:waypoint x="205" y="675" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Seq_ArchitectDraft_Catch_di_g" bpmnElement="Seq_ArchitectDraft_Catch">
-        <di:waypoint x="305" y="955" />
-        <di:waypoint x="387" y="955" />
+        <di:waypoint x="305" y="675" />
+        <di:waypoint x="387" y="675" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Seq_ArchitectDraft_End_di_g" bpmnElement="Seq_ArchitectDraft_End">
-        <di:waypoint x="255" y="995" />
-        <di:waypoint x="255" y="1095" />
-        <di:waypoint x="387" y="1095" />
+        <di:waypoint x="255" y="715" />
+        <di:waypoint x="255" y="815" />
+        <di:waypoint x="387" y="815" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Seq_ArchitectCatch_Draft_di_g" bpmnElement="Seq_ArchitectCatch_Draft">
-        <di:waypoint x="387" y="955" />
-        <di:waypoint x="305" y="955" />
+        <di:waypoint x="387" y="675" />
+        <di:waypoint x="305" y="675" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="StartEvent_StoresReceiveOrder_di_g" bpmnElement="StartEvent_StoresReceiveOrder">
-        <dc:Bounds x="87" y="1255" width="36" height="36" />
+        <dc:Bounds x="87" y="982" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_ProcessOrder_di_g" bpmnElement="Task_ProcessOrder">
-        <dc:Bounds x="205" y="1233" width="100" height="80" />
+        <dc:Bounds x="205" y="960" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_StoresEnd_di_g" bpmnElement="EndEvent_StoresEnd">
-        <dc:Bounds x="387" y="1255" width="36" height="36" />
+        <dc:Bounds x="387" y="982" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Seq_StoresStart_Process_di_g" bpmnElement="Seq_StoresStart_Process">
-        <di:waypoint x="123" y="1273" />
-        <di:waypoint x="205" y="1273" />
+        <di:waypoint x="123" y="1000" />
+        <di:waypoint x="205" y="1000" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Seq_StoresProcess_End_di_g" bpmnElement="Seq_StoresProcess_End">
-        <di:waypoint x="305" y="1273" />
-        <di:waypoint x="387" y="1273" />
+        <di:waypoint x="305" y="1000" />
+        <di:waypoint x="387" y="1000" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="StartEvent_FriendsReceiveHelpReq_di_g" bpmnElement="StartEvent_FriendsReceiveHelpReq">
-        <dc:Bounds x="87" y="1455" width="36" height="36" />
+        <dc:Bounds x="87" y="1182" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_CoordinateAvailability_di_g" bpmnElement="Task_CoordinateAvailability">
-        <dc:Bounds x="205" y="1433" width="100" height="80" />
+        <dc:Bounds x="205" y="1160" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_FriendsHelpEnd_di_g" bpmnElement="EndEvent_FriendsHelpEnd">
-        <dc:Bounds x="387" y="1455" width="36" height="36" />
+        <dc:Bounds x="387" y="1182" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_FriendsReceiveInvite_di_g" bpmnElement="StartEvent_FriendsReceiveInvite">
-        <dc:Bounds x="87" y="1595" width="36" height="36" />
+        <dc:Bounds x="87" y="1322" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_RespondToInvite_di_g" bpmnElement="Task_RespondToInvite">
-        <dc:Bounds x="205" y="1573" width="100" height="80" />
+        <dc:Bounds x="205" y="1300" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_SendResponse_di_g" bpmnElement="Task_SendResponse">
-        <dc:Bounds x="355" y="1573" width="100" height="80" />
+        <dc:Bounds x="355" y="1300" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_FriendsPartyEnd_di_g" bpmnElement="EndEvent_FriendsPartyEnd">
-        <dc:Bounds x="537" y="1595" width="36" height="36" />
+        <dc:Bounds x="537" y="1322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_PartyResponses_di_g" bpmnElement="DataObject_PartyResponses">
+        <dc:Bounds x="237" y="1420" width="36" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Seq_FriendsHelpStart_Coordinate_di_g" bpmnElement="Seq_FriendsHelpStart_Coordinate">
-        <di:waypoint x="123" y="1473" />
-        <di:waypoint x="205" y="1473" />
+        <di:waypoint x="123" y="1200" />
+        <di:waypoint x="205" y="1200" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Seq_FriendsCoordinate_HelpEnd_di_g" bpmnElement="Seq_FriendsCoordinate_HelpEnd">
-        <di:waypoint x="305" y="1473" />
-        <di:waypoint x="387" y="1473" />
+        <di:waypoint x="305" y="1200" />
+        <di:waypoint x="387" y="1200" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Seq_FriendsPartyStart_Respond_di_g" bpmnElement="Seq_FriendsPartyStart_Respond">
-        <di:waypoint x="123" y="1613" />
-        <di:waypoint x="205" y="1613" />
+        <di:waypoint x="123" y="1340" />
+        <di:waypoint x="205" y="1340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Seq_FriendsRespond_SendResponse_di_g" bpmnElement="Seq_FriendsRespond_SendResponse">
-        <di:waypoint x="305" y="1613" />
-        <di:waypoint x="355" y="1613" />
+        <di:waypoint x="305" y="1340" />
+        <di:waypoint x="355" y="1340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Seq_FriendsSendResponse_PartyEnd_di_g" bpmnElement="Seq_FriendsSendResponse_PartyEnd">
-        <di:waypoint x="455" y="1613" />
-        <di:waypoint x="537" y="1613" />
+        <di:waypoint x="455" y="1340" />
+        <di:waypoint x="537" y="1340" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Msg_SendReq_ArchitectStart_di" bpmnElement="Msg_SendReq_ArchitectStart">
         <di:waypoint x="405" y="110" />
-        <di:waypoint x="105" y="937" />
+        <di:waypoint x="105" y="657" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Msg_SendRefined_ArchitectCatch_di" bpmnElement="Msg_SendRefined_ArchitectCatch">
         <di:waypoint x="1005" y="110" />
-        <di:waypoint x="405" y="937" />
+        <di:waypoint x="405" y="657" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DIA_Draft_CreateList_di" bpmnElement="DIA_Draft_CreateList">
+        <di:waypoint x="123" y="815" />
+        <di:waypoint x="955" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Msg_Order_Stores_di" bpmnElement="Msg_Order_Stores">
         <di:waypoint x="1255" y="210" />
-        <di:waypoint x="123" y="1273" />
+        <di:waypoint x="123" y="1000" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Msg_Coordinate_FriendsHelp_di" bpmnElement="Msg_Coordinate_FriendsHelp">
         <di:waypoint x="1255" y="350" />
-        <di:waypoint x="123" y="1473" />
+        <di:waypoint x="123" y="1200" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Msg_SendInvites_FriendsParty_di" bpmnElement="Msg_SendInvites_FriendsParty">
         <di:waypoint x="1705" y="210" />
-        <di:waypoint x="123" y="1613" />
+        <di:waypoint x="123" y="1340" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DOA_ArchitectDraft_Draft_di" bpmnElement="DOA_ArchitectDraft_Draft">
-        <di:waypoint x="255" y="915" />
-        <di:waypoint x="105" y="375" />
+      <bpmndi:BPMNEdge id="DIA_Responses_CreateList_di" bpmnElement="DIA_Responses_CreateList">
+        <di:waypoint x="123" y="1480" />
+        <di:waypoint x="2005" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Msg_ArchitectSendDraft_Homeowner_di" bpmnElement="Msg_ArchitectSendDraft_Homeowner">
-        <di:waypoint x="255" y="915" />
+        <di:waypoint x="255" y="635" />
         <di:waypoint x="555" y="110" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DOA_FriendsRespond_Responses_di" bpmnElement="DOA_FriendsRespond_Responses">
-        <di:waypoint x="255" y="1573" />
-        <di:waypoint x="105" y="655" />
+      <bpmndi:BPMNEdge id="DIA_Draft_Refine_di" bpmnElement="DIA_Draft_Refine">
+        <di:waypoint x="105" y="790" />
+        <di:waypoint x="705" y="110" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Msg_FriendsSendResponse_Homeowner_di" bpmnElement="Msg_FriendsSendResponse_Homeowner">
-        <di:waypoint x="455" y="1613" />
+        <di:waypoint x="455" y="1340" />
         <di:waypoint x="1855" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DOA_Collect_Requirements_di" bpmnElement="DOA_Collect_Requirements">
-        <di:waypoint x="305" y="70" />
-        <di:waypoint x="345" y="70" />
+        <di:waypoint x="255" y="110" />
+        <di:waypoint x="255" y="150" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DIA_Requirements_SendReq_di" bpmnElement="DIA_Requirements_SendReq">
-        <di:waypoint x="381" y="70" />
+        <di:waypoint x="273" y="175" />
         <di:waypoint x="355" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DIA_Draft_Refine_di" bpmnElement="DIA_Draft_Refine">
-        <di:waypoint x="705" y="150" />
-        <di:waypoint x="705" y="110" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DIA_Draft_CreateList_di" bpmnElement="DIA_Draft_CreateList">
-        <di:waypoint x="723" y="175" />
-        <di:waypoint x="955" y="210" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DOA_CreateList_MaterialList_di" bpmnElement="DOA_CreateList_MaterialList">
-        <di:waypoint x="1055" y="210" />
-        <di:waypoint x="1095" y="210" />
+        <di:waypoint x="1005" y="250" />
+        <di:waypoint x="1005" y="290" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DIA_MaterialList_Order_di" bpmnElement="DIA_MaterialList_Order">
-        <di:waypoint x="1131" y="210" />
+        <di:waypoint x="1023" y="315" />
         <di:waypoint x="1255" y="210" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DIA_Responses_CreateList_di" bpmnElement="DIA_Responses_CreateList">
-        <di:waypoint x="2055" y="290" />
-        <di:waypoint x="2055" y="250" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DOA_CreateList_AttendeeList_di" bpmnElement="DOA_CreateList_AttendeeList">
-        <di:waypoint x="2105" y="210" />
-        <di:waypoint x="2145" y="210" />
+        <di:waypoint x="2055" y="250" />
+        <di:waypoint x="2055" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DOA_ArchitectDraft_Draft_di" bpmnElement="DOA_ArchitectDraft_Draft">
+        <di:waypoint x="255" y="715" />
+        <di:waypoint x="255" y="755" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DOA_FriendsRespond_Responses_di" bpmnElement="DOA_FriendsRespond_Responses">
+        <di:waypoint x="255" y="1380" />
+        <di:waypoint x="255" y="1420" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
