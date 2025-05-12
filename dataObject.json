@@ -1,16 +1,26 @@
 {
-    "pools": [
-      {
-        "id": "Pool_1",
-        "name": "Main pool",
-        "nodes": [
-          { "id": "Task_A", "type": "task",  "name": "Do work" },
-          { "id": "Doc_1",  "type": "dataObject", "name": "Report", "isCollection": false }
-        ],
-        "flows": [
-          { "id": "OA_1", "type": "dataOutputAssociation", "source": "Task_A", "target": "Doc_1" }
-        ]
-      }
+    "id":   "Process_Forms",
+    "name": "Form Processing",
+    "nodes": [
+      { "id": "StartEvent_1",  "type": "startEvent", "name": "Start" },
+  
+      { "id": "Task_Collect",  "type": "task",       "name": "Collect Form" },
+      { "id": "Doc_Form",      "type": "dataObject", "name": "Form",    "isCollection": false },
+  
+      { "id": "Task_Review",   "type": "task",       "name": "Review Form" },
+      { "id": "Doc_Archive",   "type": "dataObject", "name": "Archive", "isCollection": true },
+  
+      { "id": "EndEvent_1",    "type": "endEvent",   "name": "End" }
+    ],
+  
+    "flows": [
+      { "id": "Seq_1", "source": "StartEvent_1", "target": "Task_Collect" },
+      { "id": "Seq_2", "source": "Task_Collect", "target": "Task_Review" },
+      { "id": "Seq_3", "source": "Task_Review",  "target": "EndEvent_1"  },
+  
+      { "id": "DOA_1", "type": "dataOutputAssociation", "source": "Task_Collect", "target": "Doc_Form"   },
+      { "id": "DIA_1", "type": "dataInputAssociation",  "source": "Doc_Form",    "target": "Task_Review" },
+      { "id": "DOA_2", "type": "dataOutputAssociation", "source": "Task_Review", "target": "Doc_Archive" }
     ]
   }
   
