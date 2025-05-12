@@ -1,0 +1,35 @@
+{
+    "id": "Process_SimpleDataFlow",
+    "name": "Simple Data Handling",
+    "nodes": [
+      {
+        "id": "Task_PrepareDoc",
+        "name": "Prepare Document",
+        "type": "Task"
+      },
+      {
+        "id": "DataObj_Doc",
+        "name": "Shared Document",
+        "type": "DataObjectReference"
+      },
+      {
+        "id": "Task_ReviewDoc",
+        "name": "Review Document",
+        "type": "Task"
+      }
+    ],
+    "flows": [
+      {
+        "id": "Assoc_PrepareToDoc",
+        "source": "Task_PrepareDoc",
+        "target": "DataObj_Doc",
+        "type": "DataOutputAssociation"
+      },
+      {
+        "id": "Assoc_DocToReview",
+        "source": "DataObj_Doc",
+        "target": "Task_ReviewDoc",
+        "type": "DataInputAssociation"
+      }
+    ]
+  }

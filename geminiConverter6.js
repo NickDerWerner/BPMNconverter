@@ -22,8 +22,7 @@ import fs                from 'node:fs/promises';
 const processJson = JSON.parse(
   // !!! IMPORTANT: Update this path to your actual JSON file !!!
   // await fs.readFile(new URL('./processTests/gemini2.json', import.meta.url)) // Example
-  //await fs.readFile(new URL('./processTests/gemini4.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
-  await fs.readFile(new URL('./processTests/claude37.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+  await fs.readFile(new URL('./processTests/gemini4.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
 );
 
 /* 2 ─── helpers ───────────────────────────────────────────────── */

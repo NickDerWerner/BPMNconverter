@@ -399,87 +399,97 @@ for (const mf of messageFlowSpecs) {
 /* 8.5 ─── data association flows + DI edges with proper docking ─── */
 // shapeById map is populated now, use it
 
+// Keep track of Data Objects we've already repositioned
 const repositionedDataObjects = new Set();
 
-// --- Phase 1: Reposition Data Objects based on connected Tasks ---
-console.log('🔄 Phase 1: Repositioning Data Objects...');
+// Prioritize repositioning Data Objects based on Output Associations first.
+// If not positioned by an Output, attempt to position based on an Input.
+// Iterate through data association specs to decide Data Object positions.
 for (const daSpec of dataAssociationSpecs) {
     const assocElement = daSpec.assocElement; // The bpmn:Data...Association element
     const visualSourceBpmn = byId[daSpec.visualSourceId]; // bpmn: element defined as visual source
     const visualTargetBpmn = byId[daSpec.visualTargetId]; // bpmn: element defined as visual target
 
-    if (!visualSourceBpmn || !visualTargetBpmn) {
-         console.warn(`⚠️ Data association ${daSpec.id}: BPMN elements not found for repositioning phase. Skipped.`);
-         continue;
-    }
-
     let doBpmnElement, activityBpmnElement;
 
-    // Identify which element is the Data Object and which is the Activity
-    // Note: We assume valid associations (Activity <-> DataObjectRef) are already filtered in section 6.
-    if (visualSourceBpmn.$type === 'bpmn:DataObjectReference' || visualSourceBpmn.$type === 'bpmn:DataStoreReference') {
-        doBpmnElement = visualSourceBpmn;
-        activityBpmnElement = visualTargetBpmn;
-    } else { // visualTargetBpmn must be the DataObjectReference/DataStoreReference
-        doBpmnElement = visualTargetBpmn;
+    // Identify which element is the Data Object and which is the Activity based on the association type and source/target
+    const isOutput = assocElement.$type === 'bpmn:DataOutputAssociation';
+    const isInput = assocElement.$type === 'bpmn:DataInputAssociation';
+
+    const srcIsActivity = visualSourceBpmn.$type.includes('Activity') || visualSourceBpmn.$type.includes('Task') || visualSourceBpmn.$type.includes('SubProcess') || visualSourceBpmn.$type.includes('CallActivity');
+    const tgtIsActivity = visualTargetBpmn.$type.includes('Activity') || visualTargetBpmn.$type.includes('Task') || visualTargetBpmn.$type.includes('SubProcess') || visualTargetBpmn.$type.includes('CallActivity');
+    const srcIsDataObject = visualSourceBpmn.$type === 'bpmn:DataObjectReference' || visualSourceBpmn.$type === 'bpmn:DataStoreReference';
+    const tgtIsDataObject = visualTargetBpmn.$type === 'bpmn:DataObjectReference' || visualTargetBpmn.$type === 'bpmn:DataStoreReference';
+
+
+    if ((isOutput && srcIsActivity && tgtIsDataObject)) {
         activityBpmnElement = visualSourceBpmn;
+        doBpmnElement = visualTargetBpmn;
+    } else if ((isInput && srcIsDataObject && tgtIsActivity)) {
+        activityBpmnElement = visualTargetBpmn; // Activity is the target for input
+        doBpmnElement = visualSourceBpmn;     // Data Object is the source for input
+    } else {
+         console.warn(`⚠️ Data association ${daSpec.id}: Source/Target types mismatch for association type. Skipping repositioning.`);
+         continue;
     }
 
     const doShape = shapeById[doBpmnElement.id];
     const activityShape = shapeById[activityBpmnElement.id];
 
     if (!doShape || !activityShape) {
-         console.warn(`⚠️ Data association ${daSpec.id}: Could not find DI shapes for repositioning Data Object ${doBpmnElement.id}. Skipped.`);
+         console.warn(`⚠️ Data association ${daSpec.id}: Could not find DI shapes for elements. Skipping repositioning.`);
          continue;
     }
 
-    // Only reposition if this Data Object hasn't been placed yet
-    if (!repositionedDataObjects.has(doBpmnElement.id)) {
-        let targetX, targetY;
-        const actBounds = activityShape.bounds;
-        const doBounds = doShape.bounds; // Get current bounds for size
+    // --- Repositioning Logic ---
+    let shouldReposition = false;
+    let targetX, targetY;
+    const actBounds = activityShape.bounds;
+    const doBounds = doShape.bounds;
 
-        // Decide placement based on association type
-        if (assocElement.$type === 'bpmn:DataOutputAssociation') {
-            // Activity -> DataObjectRef: Place Data Object to the right of the Activity
-            targetX = actBounds.x + actBounds.width + DATA_OBJECT_H_GAP;
-            targetY = actBounds.y + (actBounds.height / 2) - (doBounds.height / 2); // vertically center
+    // Rule 1: If this is an Output Association and the DO hasn't been positioned yet
+    if (isOutput && !repositionedDataObjects.has(doBpmnElement.id)) {
+        // Place Data Object below the source Activity
+        targetX = actBounds.x + (actBounds.width / 2) - (doBounds.width / 2) + DATA_OBJECT_H_GAP;
+        targetY = actBounds.y + actBounds.height + DATA_OBJECT_V_GAP;
+        shouldReposition = true;
+        console.log(`✨ Planning reposition of ${doBpmnElement.id} below Activity ${activityBpmnElement.id} (from DOA)`);
+    }
+    // Rule 2: If this is an Input Association and the DO hasn't been positioned by ANY association yet
+    // We only apply this rule if the DO was NOT positioned by an Output Association in a previous iteration of this loop.
+    else if (isInput && !repositionedDataObjects.has(doBpmnElement.id)) {
+        // Place Data Object below the target Activity (same logic as output for consistency)
+        targetX = actBounds.x + (actBounds.width / 2) - (doBounds.width / 2) + DATA_OBJECT_H_GAP;
+        targetY = actBounds.y + actBounds.height + DATA_OBJECT_V_GAP;
+         shouldReposition = true;
+         console.log(`✨ Planning reposition of ${doBpmnElement.id} below Activity ${activityBpmnElement.id} (from DIA, fallback)`);
+    }
+    // else: Data Object already positioned (either by a previous Output or Input rule), do not reposition again.
 
-        } else if (assocElement.$type === 'bpmn:DataInputAssociation') {
-             // DataObjectRef -> Activity: Place Data Object below the Activity
-             targetX = actBounds.x + (actBounds.width / 2) - (doBounds.width / 2); // horizontally center
-             targetY = actBounds.y + actBounds.height + DATA_OBJECT_V_GAP;
-        } else {
-            // Should not happen with section 6 validation, but safety net
-            console.warn(`⚠️ Data association ${daSpec.id}: Unknown type for repositioning. Skipped.`);
-            continue;
-        }
 
-        // Update the shape's bounds in the shapeById map and the plane.planeElement array
+    if (shouldReposition) {
+        // Apply the planned position
         doShape.bounds.x = targetX;
         doShape.bounds.y = targetY;
-
         repositionedDataObjects.add(doBpmnElement.id); // Mark as repositioned
-        console.log(`✨ Repositioned ${doBpmnElement.id} (shape: ${doShape.id}) near ${activityBpmnElement.id}`);
+        console.log(`-> Applied reposition for ${doBpmnElement.id}`);
     }
-    // else: Data Object already positioned by another association, skip repositioning this time
 }
-console.log('✅ Phase 1: Data Objects repositioned.');
 
-
-// --- Phase 2: Create Data Association DI Edges ---
-console.log('🔄 Phase 2: Creating Data Association DI edges...');
+// Now, create the DI edges for ALL data associations (Input and Output),
+// using the potentially updated shape positions stored in shapeById.
 for (const daSpec of dataAssociationSpecs) {
     const assocElement = daSpec.assocElement; // The bpmn:Data...Association element
     const visualSourceBpmn = byId[daSpec.visualSourceId]; // bpmn: element defined as visual source
     const visualTargetBpmn = byId[daSpec.visualTargetId]; // bpmn: element defined as visual target
 
     if (!assocElement || !visualSourceBpmn || !visualTargetBpmn) {
-       console.warn(`⚠️ Data association ${daSpec.id}: BPMN elements not found for DI edge creation phase. Skipped.`);
+       console.warn(`⚠️ Data association ${daSpec.id}: BPMN elements not found for DI edge. Skipped.`);
        continue;
     }
 
-    // Get the DI shapes. These shapes now have their FINAL positions from Phase 1 or auto-layout.
+    // Get the DI shapes for the visual source and target elements
+    // These shapes now hold the potentially updated positions for Data Objects from the previous loop
     const visualSourceShape = shapeById[visualSourceBpmn.id];
     const visualTargetShape = shapeById[visualTargetBpmn.id];
 
@@ -499,16 +509,15 @@ for (const daSpec of dataAssociationSpecs) {
           waypoint: [start, end].map(pt => moddle.create('dc:Point', pt))
         })
       );
-      console.log(`✅ Created DI edge for data association ${daSpec.id} connecting shapes ${visualSourceShape.id} and ${visualTargetShape.id}`);
+      console.log(`✅ Created DI edge for data association ${daSpec.id}`);
 
     } else {
-       console.warn(`⚠️ Data association ${daSpec.id}: Could not find DI shapes for visual source (${daSpec.visualSourceId}) or visual target (${daSpec.visualTargetId}) for DI edge creation phase. Cannot create DI edge.`);
+         console.warn(`⚠️ Data association ${daSpec.id}: Could not find DI shapes for visual source (${daSpec.visualSourceId}) or visual target (${daSpec.visualTargetId}) for DI edge.`);
     }
 }
-console.log('✅ Phase 2: Data Association DI edges created.');
 
-  
-  /* 9 ─── final serialisation + save ───────────────────────────── */
-  const { xml: finalXml } = await moddle.toXML(definitions, { format: true });
-  await fs.writeFile('diagram.bpmn', finalXml);
-  console.log('✅  Layouted diagram (multiple pools, data objects, associations) saved to diagram.bpmn');
+
+/* 9 ─── final serialisation + save ───────────────────────────── */
+const { xml: finalXml } = await moddle.toXML(definitions, { format: true });
+await fs.writeFile('diagram.bpmn', finalXml);
+console.log('✅  Layouted diagram (multiple pools, data objects, associations) saved to diagram.bpmn');

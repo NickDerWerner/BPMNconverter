@@ -84,7 +84,7 @@
         "id": "Pool_OnlineStores",
         "name": "Online Stores",
         "nodes": [
-          { "id": "StartEvent_StoresReceiveOrder", "type": "startEvent", "name": "Receive Order", "eventDefinitionType": "message" },
+          { "id": "StartEvent_StoresReceiveOrder", "type": "startEvent", "name": "Receive Order", "eventDefinitionType": "MessageEventDefinition" },
           { "id": "Task_ProcessOrder", "type": "serviceTask", "name": "Process Order" },
           { "id": "EndEvent_StoresEnd", "type": "endEvent", "name": "Order Processed" }
         ],

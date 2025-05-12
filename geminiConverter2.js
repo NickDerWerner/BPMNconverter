@@ -8,8 +8,8 @@
 /* Tweakable layout constants */
 const LEFT_POOL_PADDING = 30;  // extra gap between left pool border and first node (px)
 const POOL_SPACING      = 60;  // vertical gap between pools (px)
-const DATA_OBJECT_V_GAP = 40;  // vertical gap between task and data object (px)
-const DATA_OBJECT_H_GAP = 0;   // Horizontal offset - keep 0 for centering below task
+const DATA_OBJECT_V_GAP = 50;  // vertical gap between task and data object (px)
+const DATA_OBJECT_H_GAP = -130;   // Horizontal offset - keep 0 for centering below task
 
 import { layoutProcess } from 'bpmn-auto-layout';
 import BpmnModdle        from 'bpmn-moddle';
@@ -17,7 +17,7 @@ import fs                from 'node:fs/promises';
 
 /* 1 ─── load structured JSON ──────────────────────────────────── */
 const processJson = JSON.parse(
-  await fs.readFile(new URL('processTests/gemini1.json', import.meta.url))
+  await fs.readFile(new URL('processTests/lechat.json', import.meta.url))
 );
 
 /* 2 ─── helpers ───────────────────────────────────────────────── */
@@ -403,31 +403,34 @@ for (const mf of messageFlowSpecs) {
 // Keep track of Data Objects we've already repositioned
 const repositionedDataObjects = new Set();
 
-// First, reposition Data Objects based *specifically* on DataOutputAssociations
+// Prioritize repositioning Data Objects based on Output Associations first.
+// If not positioned by an Output, attempt to position based on an Input.
+// Iterate through data association specs to decide Data Object positions.
 for (const daSpec of dataAssociationSpecs) {
     const assocElement = daSpec.assocElement; // The bpmn:Data...Association element
-
-    // We only want to use DataOutputAssociations for this specific placement rule
-    if (assocElement.$type !== 'bpmn:DataOutputAssociation') {
-        continue; // Skip if it's not an Output Association
-    }
-
-    const visualSourceBpmn = byId[daSpec.visualSourceId]; // The Activity (should be source of DOA)
-    const visualTargetBpmn = byId[daSpec.visualTargetId]; // The DataObjectReference (should be target of DOA)
+    const visualSourceBpmn = byId[daSpec.visualSourceId]; // bpmn: element defined as visual source
+    const visualTargetBpmn = byId[daSpec.visualTargetId]; // bpmn: element defined as visual target
 
     let doBpmnElement, activityBpmnElement;
 
-    // Double-check if this is indeed Activity -> DataObjectRef (or DataStoreRef)
+    // Identify which element is the Data Object and which is the Activity based on the association type and source/target
+    const isOutput = assocElement.$type === 'bpmn:DataOutputAssociation';
+    const isInput = assocElement.$type === 'bpmn:DataInputAssociation';
+
     const srcIsActivity = visualSourceBpmn.$type.includes('Activity') || visualSourceBpmn.$type.includes('Task') || visualSourceBpmn.$type.includes('SubProcess') || visualSourceBpmn.$type.includes('CallActivity');
+    const tgtIsActivity = visualTargetBpmn.$type.includes('Activity') || visualTargetBpmn.$type.includes('Task') || visualTargetBpmn.$type.includes('SubProcess') || visualTargetBpmn.$type.includes('CallActivity');
+    const srcIsDataObject = visualSourceBpmn.$type === 'bpmn:DataObjectReference' || visualSourceBpmn.$type === 'bpmn:DataStoreReference';
     const tgtIsDataObject = visualTargetBpmn.$type === 'bpmn:DataObjectReference' || visualTargetBpmn.$type === 'bpmn:DataStoreReference';
 
-    if (srcIsActivity && tgtIsDataObject) {
+
+    if ((isOutput && srcIsActivity && tgtIsDataObject)) {
         activityBpmnElement = visualSourceBpmn;
         doBpmnElement = visualTargetBpmn;
+    } else if ((isInput && srcIsDataObject && tgtIsActivity)) {
+        activityBpmnElement = visualTargetBpmn; // Activity is the target for input
+        doBpmnElement = visualSourceBpmn;     // Data Object is the source for input
     } else {
-         // This association was marked as DataOutputAssociation but doesn't fit the type pattern?
-         // Or perhaps the JSON source/target were swapped?
-         console.warn(`⚠️ Data association ${daSpec.id}: Expected Activity -> Data Object/Store Reference for Output Association. Skipping repositioning.`);
+         console.warn(`⚠️ Data association ${daSpec.id}: Source/Target types mismatch for association type. Skipping repositioning.`);
          continue;
     }
 
@@ -435,27 +438,43 @@ for (const daSpec of dataAssociationSpecs) {
     const activityShape = shapeById[activityBpmnElement.id];
 
     if (!doShape || !activityShape) {
-         console.warn(`⚠️ Data association ${daSpec.id}: Could not find DI shapes for repositioning.`);
+         console.warn(`⚠️ Data association ${daSpec.id}: Could not find DI shapes for elements. Skipping repositioning.`);
          continue;
     }
 
-    // Only reposition if this Data Object hasn't been placed by *any* previous DOA
-    if (!repositionedDataObjects.has(doBpmnElement.id)) {
-        const actBounds = activityShape.bounds;
-        const doBounds = doShape.bounds;
+    // --- Repositioning Logic ---
+    let shouldReposition = false;
+    let targetX, targetY;
+    const actBounds = activityShape.bounds;
+    const doBounds = doShape.bounds;
 
-        // Calculate position to place Data Object below the Activity, horizontally centered
-        const targetX = actBounds.x + (actBounds.width / 2) - (doBounds.width / 2) + DATA_OBJECT_H_GAP; // Use H_GAP (default 0)
-        const targetY = actBounds.y + actBounds.height + DATA_OBJECT_V_GAP; // Place below activity
+    // Rule 1: If this is an Output Association and the DO hasn't been positioned yet
+    if (isOutput && !repositionedDataObjects.has(doBpmnElement.id)) {
+        // Place Data Object below the source Activity
+        targetX = actBounds.x + (actBounds.width / 2) - (doBounds.width / 2) + DATA_OBJECT_H_GAP;
+        targetY = actBounds.y + actBounds.height + DATA_OBJECT_V_GAP;
+        shouldReposition = true;
+        console.log(`✨ Planning reposition of ${doBpmnElement.id} below Activity ${activityBpmnElement.id} (from DOA)`);
+    }
+    // Rule 2: If this is an Input Association and the DO hasn't been positioned by ANY association yet
+    // We only apply this rule if the DO was NOT positioned by an Output Association in a previous iteration of this loop.
+    else if (isInput && !repositionedDataObjects.has(doBpmnElement.id)) {
+        // Place Data Object below the target Activity (same logic as output for consistency)
+        targetX = actBounds.x + (actBounds.width / 2) - (doBounds.width / 2) + DATA_OBJECT_H_GAP;
+        targetY = actBounds.y + actBounds.height + DATA_OBJECT_V_GAP;
+         shouldReposition = true;
+         console.log(`✨ Planning reposition of ${doBpmnElement.id} below Activity ${activityBpmnElement.id} (from DIA, fallback)`);
+    }
+    // else: Data Object already positioned (either by a previous Output or Input rule), do not reposition again.
 
-        // Update the shape's bounds
+
+    if (shouldReposition) {
+        // Apply the planned position
         doShape.bounds.x = targetX;
         doShape.bounds.y = targetY;
-
         repositionedDataObjects.add(doBpmnElement.id); // Mark as repositioned
-        console.log(`✨ Repositioned Data Object ${doBpmnElement.id} below Activity ${activityBpmnElement.id} (from DOA)`);
+        console.log(`-> Applied reposition for ${doBpmnElement.id}`);
     }
-    // else: Data Object already positioned by another DOA, skip repositioning this time
 }
 
 // Now, create the DI edges for ALL data associations (Input and Output),
@@ -471,7 +490,7 @@ for (const daSpec of dataAssociationSpecs) {
     }
 
     // Get the DI shapes for the visual source and target elements
-    // These shapes now hold the potentially updated positions for Data Objects
+    // These shapes now hold the potentially updated positions for Data Objects from the previous loop
     const visualSourceShape = shapeById[visualSourceBpmn.id];
     const visualTargetShape = shapeById[visualTargetBpmn.id];
 

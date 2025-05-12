@@ -1,0 +1,125 @@
+{
+    "pools": [
+      {
+        "id": "you_pool",
+        "name": "You",
+        "nodes": [
+          { "id": "StartEvent_Process", "type": "startEvent", "name": "Start Tree House Project" },
+          { "id": "Task_CollectRequirements", "type": "userTask", "name": "Collect Requirements" },
+          { "id": "DataObject_Requirements", "type": "dataobject", "name": "Requirements" },
+          { "id": "Task_SendRequirements", "type": "sendTask", "name": "Send Requirements to Architect" },
+          { "id": "IntermediateCatchEvent_ReceiveDraft", "type": "intermediateCatchEvent", "name": "Receive Draft", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_RefineRequirements", "type": "userTask", "name": "Refine Requirements" },
+          { "id": "DataObject_RefinedRequirements", "type": "dataobject", "name": "Refined Requirements" },
+          { "id": "Task_SendRefinedRequirements", "type": "sendTask", "name": "Send Refined Requirements" },
+          { "id": "ExclusiveGateway_DraftApproved", "type": "exclusiveGateway", "name": "Draft Approved?" },
+          { "id": "Task_CreateMaterialsList", "type": "userTask", "name": "Create Materials List" },
+          { "id": "DataObject_MaterialsList", "type": "dataobject", "name": "Materials List" },
+          { "id": "Task_OrderMaterials", "type": "sendTask", "name": "Order Materials" },
+          { "id": "Task_InviteFriendsToBuild", "type": "sendTask", "name": "Invite Friends to Build" },
+          { "id": "ParallelGateway_Split", "type": "parallelGateway", "name": "Split Process" },
+          { "id": "ParallelGateway_Join", "type": "parallelGateway", "name": "Join Process" },
+          { "id": "Task_BuildTreeHouse", "type": "manualTask", "name": "Build Tree House" },
+          { "id": "Task_CreateAttendeesList", "type": "userTask", "name": "Create Attendees List" },
+          { "id": "DataObject_AttendeesList", "type": "dataobject", "name": "Attendees List" },
+          { "id": "Task_BuySnacks", "type": "userTask", "name": "Buy Snacks" },
+          { "id": "Task_SendPartyInvitations", "type": "sendTask", "name": "Send Party Invitations" },
+          { "id": "EndEvent_Process", "type": "endEvent", "name": "Tree House Complete" }
+        ],
+        "flows": [
+          { "id": "Seq_Start_CollectRequirements", "source": "StartEvent_Process", "target": "Task_CollectRequirements", "type": "sequenceFlow" },
+          { "id": "DOA_CollectRequirements_Requirements", "source": "Task_CollectRequirements", "target": "DataObject_Requirements", "type": "dataOutputAssociation" },
+          { "id": "Seq_CollectRequirements_SendRequirements", "source": "Task_CollectRequirements", "target": "Task_SendRequirements", "type": "sequenceFlow" },
+          { "id": "DIA_Requirements_SendRequirements", "source": "DataObject_Requirements", "target": "Task_SendRequirements", "type": "dataInputAssociation" },
+          { "id": "Seq_SendRequirements_ReceiveDraft", "source": "Task_SendRequirements", "target": "IntermediateCatchEvent_ReceiveDraft", "type": "sequenceFlow" },
+          { "id": "Seq_ReceiveDraft_RefineRequirements", "source": "IntermediateCatchEvent_ReceiveDraft", "target": "Task_RefineRequirements", "type": "sequenceFlow" },
+          { "id": "DOA_RefineRequirements_RefinedRequirements", "source": "Task_RefineRequirements", "target": "DataObject_RefinedRequirements", "type": "dataOutputAssociation" },
+          { "id": "Seq_RefineRequirements_SendRefinedRequirements", "source": "Task_RefineRequirements", "target": "Task_SendRefinedRequirements", "type": "sequenceFlow" },
+          { "id": "DIA_RefinedRequirements_SendRefinedRequirements", "source": "DataObject_RefinedRequirements", "target": "Task_SendRefinedRequirements", "type": "dataInputAssociation" },
+          { "id": "Seq_SendRefinedRequirements_DraftApproved", "source": "Task_SendRefinedRequirements", "target": "ExclusiveGateway_DraftApproved", "type": "sequenceFlow" },
+          { "id": "Seq_DraftApproved_IntermediateCatchEvent", "source": "ExclusiveGateway_DraftApproved", "target": "IntermediateCatchEvent_ReceiveDraft", "type": "sequenceFlow", "condition": "Draft needs more refinement", "name": "No" },
+          { "id": "Seq_DraftApproved_CreateMaterialsList", "source": "ExclusiveGateway_DraftApproved", "target": "Task_CreateMaterialsList", "type": "sequenceFlow", "condition": "Draft is acceptable", "name": "Yes" },
+          { "id": "DOA_CreateMaterialsList_MaterialsList", "source": "Task_CreateMaterialsList", "target": "DataObject_MaterialsList", "type": "dataOutputAssociation" },
+          { "id": "Seq_CreateMaterialsList_OrderMaterials", "source": "Task_CreateMaterialsList", "target": "Task_OrderMaterials", "type": "sequenceFlow" },
+          { "id": "DIA_MaterialsList_OrderMaterials", "source": "DataObject_MaterialsList", "target": "Task_OrderMaterials", "type": "dataInputAssociation" },
+          { "id": "Seq_OrderMaterials_ParallelGatewaySplit", "source": "Task_OrderMaterials", "target": "ParallelGateway_Split", "type": "sequenceFlow" },
+          { "id": "Seq_ParallelGatewaySplit_InviteFriendsToBuild", "source": "ParallelGateway_Split", "target": "Task_InviteFriendsToBuild", "type": "sequenceFlow" },
+          { "id": "Seq_ParallelGatewaySplit_BuildTreeHouse", "source": "ParallelGateway_Split", "target": "Task_BuildTreeHouse", "type": "sequenceFlow" },
+          { "id": "Seq_BuildTreeHouse_ParallelGatewayJoin", "source": "Task_BuildTreeHouse", "target": "ParallelGateway_Join", "type": "sequenceFlow" },
+          { "id": "Seq_InviteFriendsToBuild_ParallelGatewayJoin", "source": "Task_InviteFriendsToBuild", "target": "ParallelGateway_Join", "type": "sequenceFlow" },
+          { "id": "Seq_ParallelGatewayJoin_CreateAttendeesList", "source": "ParallelGateway_Join", "target": "Task_CreateAttendeesList", "type": "sequenceFlow" },
+          { "id": "DOA_CreateAttendeesList_AttendeesList", "source": "Task_CreateAttendeesList", "target": "DataObject_AttendeesList", "type": "dataOutputAssociation" },
+          { "id": "Seq_CreateAttendeesList_BuySnacks", "source": "Task_CreateAttendeesList", "target": "Task_BuySnacks", "type": "sequenceFlow" },
+          { "id": "DIA_AttendeesList_BuySnacks", "source": "DataObject_AttendeesList", "target": "Task_BuySnacks", "type": "dataInputAssociation" },
+          { "id": "Seq_BuySnacks_SendPartyInvitations", "source": "Task_BuySnacks", "target": "Task_SendPartyInvitations", "type": "sequenceFlow" },
+          { "id": "Seq_SendPartyInvitations_End", "source": "Task_SendPartyInvitations", "target": "EndEvent_Process", "type": "sequenceFlow" },
+          { "id": "MessageFlow_SendRequirements", "source": "Task_SendRequirements", "target": "StartEvent_ReceiveRequirements", "type": "messageFlow", "name": "Requirements Document" },
+          { "id": "MessageFlow_SendRefinedRequirements", "source": "Task_SendRefinedRequirements", "target": "StartEvent_ReceiveRefinedRequirements", "type": "messageFlow", "name": "Refined Requirements" },
+          { "id": "MessageFlow_OrderMaterials", "source": "Task_OrderMaterials", "target": "StartEvent_ReceiveOrder", "type": "messageFlow", "name": "Materials Order" },
+          { "id": "MessageFlow_InviteFriendsToBuild", "source": "Task_InviteFriendsToBuild", "target": "StartEvent_ReceiveInvitation", "type": "messageFlow", "name": "Building Invitation" },
+          { "id": "MessageFlow_SendPartyInvitations", "source": "Task_SendPartyInvitations", "target": "StartEvent_ReceivePartyInvitation", "type": "messageFlow", "name": "Party Invitation" }
+        ]
+      },
+      {
+        "id": "architect_pool",
+        "name": "Tree House Architect",
+        "nodes": [
+          { "id": "StartEvent_ReceiveRequirements", "type": "startEvent", "name": "Receive Requirements", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_CreateDraft", "type": "userTask", "name": "Create Draft" },
+          { "id": "DataObject_Draft", "type": "dataobject", "name": "Draft Plan" },
+          { "id": "Task_SendDraft", "type": "sendTask", "name": "Send Draft" },
+          { "id": "StartEvent_ReceiveRefinedRequirements", "type": "startEvent", "name": "Receive Refined Requirements", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_UpdateDraft", "type": "userTask", "name": "Update Draft" },
+          { "id": "DataObject_UpdatedDraft", "type": "dataobject", "name": "Updated Draft" },
+          { "id": "Task_SendUpdatedDraft", "type": "sendTask", "name": "Send Updated Draft" },
+          { "id": "EndEvent_DraftSent", "type": "endEvent", "name": "Draft Sent" }
+        ],
+        "flows": [
+          { "id": "Seq_ReceiveRequirements_CreateDraft", "source": "StartEvent_ReceiveRequirements", "target": "Task_CreateDraft", "type": "sequenceFlow" },
+          { "id": "DOA_CreateDraft_Draft", "source": "Task_CreateDraft", "target": "DataObject_Draft", "type": "dataOutputAssociation" },
+          { "id": "Seq_CreateDraft_SendDraft", "source": "Task_CreateDraft", "target": "Task_SendDraft", "type": "sequenceFlow" },
+          { "id": "DIA_Draft_SendDraft", "source": "DataObject_Draft", "target": "Task_SendDraft", "type": "dataInputAssociation" },
+          { "id": "Seq_SendDraft_End", "source": "Task_SendDraft", "target": "EndEvent_DraftSent", "type": "sequenceFlow" },
+          { "id": "Seq_ReceiveRefinedRequirements_UpdateDraft", "source": "StartEvent_ReceiveRefinedRequirements", "target": "Task_UpdateDraft", "type": "sequenceFlow" },
+          { "id": "DIA_Draft_UpdateDraft", "source": "DataObject_Draft", "target": "Task_UpdateDraft", "type": "dataInputAssociation" },
+          { "id": "DOA_UpdateDraft_UpdatedDraft", "source": "Task_UpdateDraft", "target": "DataObject_UpdatedDraft", "type": "dataOutputAssociation" },
+          { "id": "Seq_UpdateDraft_SendUpdatedDraft", "source": "Task_UpdateDraft", "target": "Task_SendUpdatedDraft", "type": "sequenceFlow" },
+          { "id": "DIA_UpdatedDraft_SendUpdatedDraft", "source": "DataObject_UpdatedDraft", "target": "Task_SendUpdatedDraft", "type": "dataInputAssociation" },
+          { "id": "Seq_SendUpdatedDraft_End", "source": "Task_SendUpdatedDraft", "target": "EndEvent_DraftSent", "type": "sequenceFlow" },
+          { "id": "MessageFlow_SendDraft", "source": "Task_SendDraft", "target": "IntermediateCatchEvent_ReceiveDraft", "type": "messageFlow", "name": "Draft Plan" },
+          { "id": "MessageFlow_SendUpdatedDraft", "source": "Task_SendUpdatedDraft", "target": "IntermediateCatchEvent_ReceiveDraft", "type": "messageFlow", "name": "Updated Draft Plan" }
+        ]
+      },
+      {
+        "id": "stores_pool",
+        "name": "Online Stores",
+        "nodes": [
+          { "id": "StartEvent_ReceiveOrder", "type": "startEvent", "name": "Receive Order", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_ProcessOrder", "type": "serviceTask", "name": "Process Order" },
+          { "id": "EndEvent_OrderProcessed", "type": "endEvent", "name": "Order Processed" }
+        ],
+        "flows": [
+          { "id": "Seq_ReceiveOrder_ProcessOrder", "source": "StartEvent_ReceiveOrder", "target": "Task_ProcessOrder", "type": "sequenceFlow" },
+          { "id": "Seq_ProcessOrder_End", "source": "Task_ProcessOrder", "target": "EndEvent_OrderProcessed", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "friends_pool",
+        "name": "Friends",
+        "nodes": [
+          { "id": "StartEvent_ReceiveInvitation", "type": "startEvent", "name": "Receive Building Invitation", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_HelpBuild", "type": "manualTask", "name": "Help Build Tree House" },
+          { "id": "StartEvent_ReceivePartyInvitation", "type": "startEvent", "name": "Receive Party Invitation", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_RespondToInvitation", "type": "userTask", "name": "Respond to Invitation" },
+          { "id": "Task_AttendParty", "type": "manualTask", "name": "Attend Tree House Party" },
+          { "id": "EndEvent_PartyAttended", "type": "endEvent", "name": "Party Attended" }
+        ],
+        "flows": [
+          { "id": "Seq_ReceiveInvitation_HelpBuild", "source": "StartEvent_ReceiveInvitation", "target": "Task_HelpBuild", "type": "sequenceFlow" },
+          { "id": "Seq_ReceivePartyInvitation_RespondToInvitation", "source": "StartEvent_ReceivePartyInvitation", "target": "Task_RespondToInvitation", "type": "sequenceFlow" },
+          { "id": "Seq_RespondToInvitation_AttendParty", "source": "Task_RespondToInvitation", "target": "Task_AttendParty", "type": "sequenceFlow" },
+          { "id": "Seq_AttendParty_End", "source": "Task_AttendParty", "target": "EndEvent_PartyAttended", "type": "sequenceFlow" }
+        ]
+      }
+    ]
+  }
