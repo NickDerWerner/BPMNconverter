@@ -22,8 +22,18 @@ import fs                from 'node:fs/promises';
 const processJson = JSON.parse(
   // !!! IMPORTANT: Update this path to your actual JSON file !!!
   // await fs.readFile(new URL('./processTests/gemini2.json', import.meta.url)) // Example
-  //await fs.readFile(new URL('./processTests/gemini4.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
-  await fs.readFile(new URL('./processTests/claude37.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+
+  //await fs.readFile(new URL('./processTests/claude3-7-sonnet.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+ // await fs.readFile(new URL('./processTests/deepSeek-r1.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+  //await fs.readFile(new URL('./processTests/Gemini-2.5-Pro-Preview-05-06.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+  //await fs.readFile(new URL('./processTests/gpt4-5.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+  await fs.readFile(new URL('./processTests/gpt4o.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+  //await fs.readFile(new URL('./processTests/gpto3.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+ // await fs.readFile(new URL('./processTests/gemini5.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+
+
+
+
 );
 
 /* 2 ─── helpers ───────────────────────────────────────────────── */

@@ -1,0 +1,100 @@
+{
+    "pools": [
+      {
+        "id": "You",
+        "name": "You (Builder)",
+        "nodes": [
+          { "id": "Start_BuildTreehouse", "type": "startEvent", "name": "Start Building Treehouse" },
+          { "id": "Task_CollectRequirements", "type": "userTask", "name": "Collect requirements" },
+          { "id": "Data_Requirements", "type": "dataobject", "name": "Requirement document" },
+          { "id": "Task_SendRequirements", "type": "sendTask", "name": "Send requirements" },
+          { "id": "Catch_Draft", "type": "intermediateCatchEvent", "name": "Receive draft", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_RefinePlan", "type": "userTask", "name": "Refine plan" },
+          { "id": "Data_UpdatedReqs", "type": "dataobject", "name": "Updated Requirements" },
+          { "id": "Task_SendUpdatedReqs", "type": "sendTask", "name": "Send updated requirements" },
+          { "id": "Catch_UpdatedDraft", "type": "intermediateCatchEvent", "name": "Receive updated draft", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Gateway_LoopDecision", "type": "exclusiveGateway", "name": "More refinement needed?" },
+          { "id": "Task_CreateMaterials", "type": "userTask", "name": "Create list of needed materials" },
+          { "id": "Data_MaterialList", "type": "dataobject", "name": "Material List" },
+          { "id": "Gateway_ParallelStart", "type": "parallelGateway" },
+          { "id": "Task_SendOrderStore1", "type": "sendTask", "name": "Order from Store 1" },
+          { "id": "Task_SendOrderStore2", "type": "sendTask", "name": "Order from Store 2" },
+          { "id": "Task_InviteFriendsToBuild", "type": "sendTask", "name": "Send messages to friends to help build" },
+          { "id": "Gateway_ParallelEnd", "type": "parallelGateway" },
+          { "id": "Task_SendPartyInvites", "type": "sendTask", "name": "Send party invitations" },
+          { "id": "Task_CreateAttendeeList", "type": "userTask", "name": "Create list of attendees" },
+          { "id": "Data_AttendeeList", "type": "dataobject", "name": "Party attendee list" },
+          { "id": "Task_BuySnacks", "type": "userTask", "name": "Buy snacks" },
+          { "id": "End_BuildTreehouse", "type": "endEvent", "name": "Treehouse process completed" }
+        ],
+        "flows": [
+          { "id": "F1", "source": "Start_BuildTreehouse", "target": "Task_CollectRequirements", "type": "sequenceFlow" },
+          { "id": "F2", "source": "Task_CollectRequirements", "target": "Data_Requirements", "type": "dataOutputAssociation" },
+          { "id": "F3", "source": "Task_CollectRequirements", "target": "Task_SendRequirements", "type": "sequenceFlow" },
+          { "id": "F4", "source": "Catch_Draft", "target": "Task_RefinePlan", "type": "sequenceFlow" },
+          { "id": "F5", "source": "Task_RefinePlan", "target": "Data_UpdatedReqs", "type": "dataOutputAssociation" },
+          { "id": "F6", "source": "Task_RefinePlan", "target": "Task_SendUpdatedReqs", "type": "sequenceFlow" },
+          { "id": "F7", "source": "Catch_UpdatedDraft", "target": "Gateway_LoopDecision", "type": "sequenceFlow" },
+          { "id": "F8", "source": "Gateway_LoopDecision", "target": "Task_RefinePlan", "type": "sequenceFlow", "condition": "Yes" },
+          { "id": "F9", "source": "Gateway_LoopDecision", "target": "Task_CreateMaterials", "type": "sequenceFlow", "isDefault": true },
+          { "id": "F10", "source": "Task_CreateMaterials", "target": "Data_MaterialList", "type": "dataOutputAssociation" },
+          { "id": "F11", "source": "Task_CreateMaterials", "target": "Gateway_ParallelStart", "type": "sequenceFlow" },
+          { "id": "F12", "source": "Gateway_ParallelStart", "target": "Task_SendOrderStore1", "type": "sequenceFlow" },
+          { "id": "F13", "source": "Gateway_ParallelStart", "target": "Task_SendOrderStore2", "type": "sequenceFlow" },
+          { "id": "F14", "source": "Gateway_ParallelStart", "target": "Task_InviteFriendsToBuild", "type": "sequenceFlow" },
+          { "id": "F15", "source": "Task_SendOrderStore1", "target": "Gateway_ParallelEnd", "type": "sequenceFlow" },
+          { "id": "F16", "source": "Task_SendOrderStore2", "target": "Gateway_ParallelEnd", "type": "sequenceFlow" },
+          { "id": "F17", "source": "Task_InviteFriendsToBuild", "target": "Gateway_ParallelEnd", "type": "sequenceFlow" },
+          { "id": "F18", "source": "Gateway_ParallelEnd", "target": "Task_SendPartyInvites", "type": "sequenceFlow" },
+          { "id": "F19", "source": "Task_SendPartyInvites", "target": "Task_CreateAttendeeList", "type": "sequenceFlow" },
+          { "id": "F20", "source": "Task_CreateAttendeeList", "target": "Data_AttendeeList", "type": "dataOutputAssociation" },
+          { "id": "F21", "source": "Task_CreateAttendeeList", "target": "Task_BuySnacks", "type": "sequenceFlow" },
+          { "id": "F22", "source": "Data_AttendeeList", "target": "Task_BuySnacks", "type": "dataInputAssociation" },
+          { "id": "F23", "source": "Task_BuySnacks", "target": "End_BuildTreehouse", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "Architect",
+        "name": "Architect",
+        "nodes": [
+          { "id": "Task_ReceiveRequirements", "type": "receiveTask", "name": "Receive requirements" },
+          { "id": "Data_DraftPlan", "type": "dataobject", "name": "Draft Plan" },
+          { "id": "Task_SendDraft", "type": "sendTask", "name": "Send draft" },
+          { "id": "Task_ReceiveUpdatedReqs", "type": "receiveTask", "name": "Receive updated requirements" },
+          { "id": "Task_SendUpdatedDraft", "type": "sendTask", "name": "Send updated draft" }
+        ],
+        "flows": [
+          { "id": "MF1", "source": "Task_ReceiveRequirements", "target": "Task_SendDraft", "type": "sequenceFlow" },
+          { "id": "F_A1", "source": "Task_SendDraft", "target": "Data_DraftPlan", "type": "dataOutputAssociation" },
+          { "id": "MF2", "source": "Task_ReceiveUpdatedReqs", "target": "Task_SendUpdatedDraft", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "OnlineStores",
+        "name": "Online Stores",
+        "nodes": [
+          { "id": "Task_ReceiveOrder1", "type": "receiveTask", "name": "Receive order (Store 1)" },
+          { "id": "Task_ProcessOrder1", "type": "task", "name": "Process order (Store 1)" },
+          { "id": "Task_ReceiveOrder2", "type": "receiveTask", "name": "Receive order (Store 2)" },
+          { "id": "Task_ProcessOrder2", "type": "task", "name": "Process order (Store 2)" }
+        ],
+        "flows": [
+          { "id": "F_OS1", "source": "Task_ReceiveOrder1", "target": "Task_ProcessOrder1", "type": "sequenceFlow" },
+          { "id": "F_OS2", "source": "Task_ReceiveOrder2", "target": "Task_ProcessOrder2", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "Friends",
+        "name": "Friends",
+        "nodes": [
+          { "id": "Task_ReceiveHelpRequest", "type": "receiveTask", "name": "Receive request to help" },
+          { "id": "Task_BuildTreehouse", "type": "manualTask", "name": "Build the treehouse" },
+          { "id": "Task_ReceiveInvite", "type": "receiveTask", "name": "Receive invitation" }
+        ],
+        "flows": [
+          { "id": "F_FR1", "source": "Task_ReceiveHelpRequest", "target": "Task_BuildTreehouse", "type": "sequenceFlow" }
+        ]
+      }
+    ]
+  }
+  

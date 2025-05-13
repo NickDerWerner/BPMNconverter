@@ -1,0 +1,128 @@
+{
+    "pools": [
+      {
+        "id": "pool_you",
+        "name": "You (Tree House Builder)",
+        "nodes": [
+          { "id": "start_process", "type": "startEvent", "name": "Decide to Build Tree House" },
+          { "id": "task_collect_requirements", "type": "userTask", "name": "Collect Requirements" },
+          { "id": "dataobject_requirements", "type": "dataobject", "name": "Requirements List" },
+          { "id": "task_send_requirements", "type": "sendTask", "name": "Send Requirements to Architect" },
+          { "id": "event_wait_draft", "type": "intermediateCatchEvent", "name": "Receive Draft Plan", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "task_refine_requirements", "type": "userTask", "name": "Refine Requirements" },
+          { "id": "gateway_refinement_needed", "type": "exclusiveGateway", "name": "Refinements Needed?" },
+          { "id": "task_send_additional_requirements", "type": "sendTask", "name": "Send Additional Requirements" },
+          { "id": "task_create_materials_list", "type": "userTask", "name": "Create Materials List" },
+          { "id": "dataobject_materials_list", "type": "dataobject", "name": "Materials List" },
+          { "id": "gateway_split_material_orders", "type": "parallelGateway", "name": "Split Orders by Category" },
+          { "id": "task_order_materials_store1", "type": "sendTask", "name": "Order Materials from Store 1" },
+          { "id": "task_order_materials_store2", "type": "sendTask", "name": "Order Materials from Store 2" },
+          { "id": "task_order_materials_store3", "type": "sendTask", "name": "Order Materials from Store 3" },
+          { "id": "gateway_join_orders", "type": "parallelGateway", "name": "All Materials Ordered" },
+          { "id": "task_invite_friends_building", "type": "sendTask", "name": "Invite Friends to Build Tree House" },
+          { "id": "event_house_built", "type": "intermediateCatchEvent", "name": "Tree House Built", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "task_send_party_invitations", "type": "sendTask", "name": "Send Party Invitations" },
+          { "id": "task_create_attendee_list", "type": "userTask", "name": "Create Party Attendee List" },
+          { "id": "dataobject_attendee_list", "type": "dataobject", "name": "Party Attendee List" },
+          { "id": "task_buy_snacks", "type": "userTask", "name": "Buy Party Snacks" },
+          { "id": "end_process", "type": "endEvent", "name": "Tree House Party Held" }
+        ],
+        "flows": [
+          { "id": "flow_start_collect", "source": "start_process", "target": "task_collect_requirements", "type": "sequenceFlow" },
+          { "id": "flow_requirements_output", "source": "task_collect_requirements", "target": "dataobject_requirements", "type": "dataOutputAssociation" },
+          { "id": "flow_requirements_input", "source": "dataobject_requirements", "target": "task_send_requirements", "type": "dataInputAssociation" },
+          { "id": "flow_collect_send", "source": "task_collect_requirements", "target": "task_send_requirements", "type": "sequenceFlow" },
+          { "id": "msg_flow_send_requirements", "source": "task_send_requirements", "target": "event_receive_requirements", "type": "messageFlow", "name": "Requirements Document" },
+          { "id": "flow_send_wait", "source": "task_send_requirements", "target": "event_wait_draft", "type": "sequenceFlow" },
+          { "id": "msg_flow_receive_draft", "source": "task_send_draft", "target": "event_wait_draft", "type": "messageFlow", "name": "Draft Plan" },
+          { "id": "flow_wait_refine", "source": "event_wait_draft", "target": "task_refine_requirements", "type": "sequenceFlow" },
+          { "id": "flow_refine_gateway", "source": "task_refine_requirements", "target": "gateway_refinement_needed", "type": "sequenceFlow" },
+          { "id": "flow_gateway_additional", "source": "gateway_refinement_needed", "target": "task_send_additional_requirements", "type": "sequenceFlow", "condition": "Refinements needed", "name": "Yes" },
+          { "id": "flow_additional_wait", "source": "task_send_additional_requirements", "target": "event_wait_draft", "type": "sequenceFlow" },
+          { "id": "msg_flow_send_additional", "source": "task_send_additional_requirements", "target": "event_receive_refinements", "type": "messageFlow", "name": "Additional Requirements" },
+          { "id": "flow_gateway_create_list", "source": "gateway_refinement_needed", "target": "task_create_materials_list", "type": "sequenceFlow", "condition": "No more refinements", "name": "No" },
+          { "id": "flow_materials_output", "source": "task_create_materials_list", "target": "dataobject_materials_list", "type": "dataOutputAssociation" },
+          { "id": "flow_create_split", "source": "task_create_materials_list", "target": "gateway_split_material_orders", "type": "sequenceFlow" },
+          { "id": "flow_materials_input1", "source": "dataobject_materials_list", "target": "task_order_materials_store1", "type": "dataInputAssociation" },
+          { "id": "flow_materials_input2", "source": "dataobject_materials_list", "target": "task_order_materials_store2", "type": "dataInputAssociation" },
+          { "id": "flow_materials_input3", "source": "dataobject_materials_list", "target": "task_order_materials_store3", "type": "dataInputAssociation" },
+          { "id": "flow_split_order1", "source": "gateway_split_material_orders", "target": "task_order_materials_store1", "type": "sequenceFlow" },
+          { "id": "flow_split_order2", "source": "gateway_split_material_orders", "target": "task_order_materials_store2", "type": "sequenceFlow" },
+          { "id": "flow_split_order3", "source": "gateway_split_material_orders", "target": "task_order_materials_store3", "type": "sequenceFlow" },
+          { "id": "flow_order1_join", "source": "task_order_materials_store1", "target": "gateway_join_orders", "type": "sequenceFlow" },
+          { "id": "flow_order2_join", "source": "task_order_materials_store2", "target": "gateway_join_orders", "type": "sequenceFlow" },
+          { "id": "flow_order3_join", "source": "task_order_materials_store3", "target": "gateway_join_orders", "type": "sequenceFlow" },
+          { "id": "msg_flow_order1", "source": "task_order_materials_store1", "target": "event_receive_order1", "type": "messageFlow", "name": "Order Category 1" },
+          { "id": "msg_flow_order2", "source": "task_order_materials_store2", "target": "event_receive_order2", "type": "messageFlow", "name": "Order Category 2" },
+          { "id": "msg_flow_order3", "source": "task_order_materials_store3", "target": "event_receive_order3", "type": "messageFlow", "name": "Order Category 3" },
+          { "id": "flow_join_invite", "source": "gateway_join_orders", "target": "task_invite_friends_building", "type": "sequenceFlow" },
+          { "id": "msg_flow_invite_friends", "source": "task_invite_friends_building", "target": "event_receive_invitation", "type": "messageFlow", "name": "Building Invitation" },
+          { "id": "flow_invite_wait_built", "source": "task_invite_friends_building", "target": "event_house_built", "type": "sequenceFlow" },
+          { "id": "msg_flow_house_built", "source": "task_house_built", "target": "event_house_built", "type": "messageFlow", "name": "House Built Notification" },
+          { "id": "flow_built_party_invites", "source": "event_house_built", "target": "task_send_party_invitations", "type": "sequenceFlow" },
+          { "id": "msg_flow_party_invites", "source": "task_send_party_invitations", "target": "event_receive_party_invite", "type": "messageFlow", "name": "Party Invitation" },
+          { "id": "flow_invites_attendee_list", "source": "task_send_party_invitations", "target": "task_create_attendee_list", "type": "sequenceFlow" },
+          { "id": "flow_attendee_list_output", "source": "task_create_attendee_list", "target": "dataobject_attendee_list", "type": "dataOutputAssociation" },
+          { "id": "flow_attendee_list_input", "source": "dataobject_attendee_list", "target": "task_buy_snacks", "type": "dataInputAssociation" },
+          { "id": "flow_attendee_list_buy", "source": "task_create_attendee_list", "target": "task_buy_snacks", "type": "sequenceFlow" },
+          { "id": "flow_buy_end", "source": "task_buy_snacks", "target": "end_process", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "pool_architect",
+        "name": "Tree House Architect",
+        "nodes": [
+          { "id": "event_receive_requirements", "type": "startEvent", "name": "Requirements Received", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "task_create_draft", "type": "userTask", "name": "Create Tree House Draft" },
+          { "id": "dataobject_draft_plan", "type": "dataobject", "name": "Draft Plan" },
+          { "id": "task_send_draft", "type": "sendTask", "name": "Send Draft Plan" },
+          { "id": "event_receive_refinements", "type": "intermediateCatchEvent", "name": "Receive Additional Requirements", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "end_architect", "type": "endEvent", "name": "Planning Complete" }
+        ],
+        "flows": [
+          { "id": "flow_receive_create", "source": "event_receive_requirements", "target": "task_create_draft", "type": "sequenceFlow" },
+          { "id": "flow_draft_output", "source": "task_create_draft", "target": "dataobject_draft_plan", "type": "dataOutputAssociation" },
+          { "id": "flow_draft_input", "source": "dataobject_draft_plan", "target": "task_send_draft", "type": "dataInputAssociation" },
+          { "id": "flow_create_send", "source": "task_create_draft", "target": "task_send_draft", "type": "sequenceFlow" },
+          { "id": "flow_send_end_or_refinements", "source": "task_send_draft", "target": "event_receive_refinements", "type": "sequenceFlow" },
+          { "id": "flow_refinements_create", "source": "event_receive_refinements", "target": "task_create_draft", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "pool_online_stores",
+        "name": "Online Stores",
+        "nodes": [
+          { "id": "event_receive_order1", "type": "startEvent", "name": "Receive Order (Category 1)", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "event_receive_order2", "type": "startEvent", "name": "Receive Order (Category 2)", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "event_receive_order3", "type": "startEvent", "name": "Receive Order (Category 3)", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "task_process_orders", "type": "serviceTask", "name": "Process Material Orders" },
+          { "id": "end_orders", "type": "endEvent", "name": "Orders Fulfilled" }
+        ],
+        "flows": [
+          { "id": "flow_order1_process", "source": "event_receive_order1", "target": "task_process_orders", "type": "sequenceFlow" },
+          { "id": "flow_order2_process", "source": "event_receive_order2", "target": "task_process_orders", "type": "sequenceFlow" },
+          { "id": "flow_order3_process", "source": "event_receive_order3", "target": "task_process_orders", "type": "sequenceFlow" },
+          { "id": "flow_process_end", "source": "task_process_orders", "target": "end_orders", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "pool_friends",
+        "name": "Friends",
+        "nodes": [
+          { "id": "event_receive_invitation", "type": "startEvent", "name": "Receive Building Invitation", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "task_build_house", "type": "manualTask", "name": "Build Tree House" },
+          { "id": "task_house_built", "type": "sendTask", "name": "Notify House is Built" },
+          { "id": "event_receive_party_invite", "type": "intermediateCatchEvent", "name": "Receive Party Invitation", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "task_attend_party", "type": "manualTask", "name": "Attend Tree House Party" },
+          { "id": "end_friends", "type": "endEvent", "name": "Celebration Complete" }
+        ],
+        "flows": [
+          { "id": "flow_invitation_build", "source": "event_receive_invitation", "target": "task_build_house", "type": "sequenceFlow" },
+          { "id": "flow_build_notify", "source": "task_build_house", "target": "task_house_built", "type": "sequenceFlow" },
+          { "id": "flow_notify_party", "source": "task_house_built", "target": "event_receive_party_invite", "type": "sequenceFlow" },
+          { "id": "flow_party_invite_attend", "source": "event_receive_party_invite", "target": "task_attend_party", "type": "sequenceFlow" },
+          { "id": "flow_attend_end", "source": "task_attend_party", "target": "end_friends", "type": "sequenceFlow" }
+        ]
+      }
+    ]
+  }

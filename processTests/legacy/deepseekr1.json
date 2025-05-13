@@ -1,0 +1,104 @@
+{
+    "pools": [
+    {
+    "id": "Builder_Pool",
+    "name": "Builder",
+    "nodes": [
+    { "id": "Start_1", "type": "startEvent", "name": "Start" },
+    { "id": "Task_Collect", "type": "userTask", "name": "Collect Requirements" },
+    { "id": "Data_Requirements", "type": "dataobject", "name": "Requirements" },
+    { "id": "Task_SendReq", "type": "sendTask", "name": "Send Requirements" },
+    { "id": "Event_ReceiveDraft", "type": "intermediateCatchEvent", "name": "Receive Draft", "eventDefinitionType": "MessageEventDefinition" },
+    { "id": "Task_Refine", "type": "userTask", "name": "Refine Requirements" },
+    { "id": "Gateway_RefineLoop", "type": "exclusiveGateway", "name": "More Refinements?" },
+    { "id": "Task_SendAdditional", "type": "sendTask", "name": "Send Additional Requirements" },
+    { "id": "Task_CreateList", "type": "userTask", "name": "Create Materials List" },
+    { "id": "Data_Materials", "type": "dataobject", "name": "Materials List" },
+    { "id": "Gateway_ParallelSplit", "type": "parallelGateway" },
+    { "id": "Task_Order", "type": "sendTask", "name": "Order Materials" },
+    { "id": "Task_MessageFriends", "type": "sendTask", "name": "Message Friends to Build" },
+    { "id": "Gateway_ParallelJoin", "type": "parallelGateway" },
+    { "id": "Task_Build", "type": "manualTask", "name": "Build House" },
+    { "id": "Task_SendInvites", "type": "sendTask", "name": "Send Invitations" },
+    { "id": "Task_CreateAttendees", "type": "userTask", "name": "Create Attendee List" },
+    { "id": "Data_Attendees", "type": "dataobject", "name": "Attendee List" },
+    { "id": "End_1", "type": "endEvent", "name": "End" }
+    ],
+    "flows": [
+    { "id": "Flow_Start_Collect", "source": "Start_1", "target": "Task_Collect", "type": "sequenceFlow" },
+    { "id": "Flow_Collect_SendReq", "source": "Task_Collect", "target": "Task_SendReq", "type": "sequenceFlow" },
+    { "id": "DOA_Collect_Req", "source": "Task_Collect", "target": "Data_Requirements", "type": "dataOutputAssociation" },
+    { "id": "Flow_SendReq_ReceiveDraft", "source": "Task_SendReq", "target": "Event_ReceiveDraft", "type": "sequenceFlow" },
+    { "id": "Flow_ReceiveDraft_Refine", "source": "Event_ReceiveDraft", "target": "Task_Refine", "type": "sequenceFlow" },
+    { "id": "DIA_Req_Refine", "source": "Data_Requirements", "target": "Task_Refine", "type": "dataInputAssociation" },
+    { "id": "Flow_Refine_Gateway", "source": "Task_Refine", "target": "Gateway_RefineLoop", "type": "sequenceFlow" },
+    { "id": "Flow_Gateway_SendAdditional", "source": "Gateway_RefineLoop", "target": "Task_SendAdditional", "type": "sequenceFlow", "condition": "Additional refinements needed" },
+    { "id": "Flow_SendAdditional_ReceiveDraft", "source": "Task_SendAdditional", "target": "Event_ReceiveDraft", "type": "sequenceFlow" },
+    { "id": "Flow_Gateway_CreateList", "source": "Gateway_RefineLoop", "target": "Task_CreateList", "type": "sequenceFlow", "isDefault": true },
+    { "id": "DIA_Req_CreateList", "source": "Data_Requirements", "target": "Task_CreateList", "type": "dataInputAssociation" },
+    { "id": "DOA_CreateList_Materials", "source": "Task_CreateList", "target": "Data_Materials", "type": "dataOutputAssociation" },
+    { "id": "Flow_CreateList_ParallelSplit", "source": "Task_CreateList", "target": "Gateway_ParallelSplit", "type": "sequenceFlow" },
+    { "id": "Flow_Split_Order", "source": "Gateway_ParallelSplit", "target": "Task_Order", "type": "sequenceFlow" },
+    { "id": "DIA_Materials_Order", "source": "Data_Materials", "target": "Task_Order", "type": "dataInputAssociation" },
+    { "id": "Flow_Split_MessageFriends", "source": "Gateway_ParallelSplit", "target": "Task_MessageFriends", "type": "sequenceFlow" },
+    { "id": "Flow_Order_Join", "source": "Task_Order", "target": "Gateway_ParallelJoin", "type": "sequenceFlow" },
+    { "id": "Flow_MessageFriends_Join", "source": "Task_MessageFriends", "target": "Gateway_ParallelJoin", "type": "sequenceFlow" },
+    { "id": "Flow_Join_Build", "source": "Gateway_ParallelJoin", "target": "Task_Build", "type": "sequenceFlow" },
+    { "id": "Flow_Build_SendInvites", "source": "Task_Build", "target": "Task_SendInvites", "type": "sequenceFlow" },
+    { "id": "Flow_SendInvites_CreateAttendees", "source": "Task_SendInvites", "target": "Task_CreateAttendees", "type": "sequenceFlow" },
+    { "id": "DOA_CreateAttendees_List", "source": "Task_CreateAttendees", "target": "Data_Attendees", "type": "dataOutputAssociation" },
+    { "id": "Flow_CreateAttendees_End", "source": "Task_CreateAttendees", "target": "End_1", "type": "sequenceFlow" },
+    { "id": "Msg_SendReq_Architect", "source": "Task_SendReq", "target": "Start_Architect", "type": "messageFlow", "name": "Requirements" },
+    { "id": "Msg_Architect_Draft", "source": "Task_SendDraft", "target": "Event_ReceiveDraft", "type": "messageFlow", "name": "Draft" },
+    { "id": "Msg_SendAdditional_Architect", "source": "Task_SendAdditional", "target": "Event_Architect_Receive", "type": "messageFlow", "name": "Additional Requirements" },
+    { "id": "Msg_Order_Stores", "source": "Task_Order", "target": "Event_Order_Receive", "type": "messageFlow", "name": "Order" },
+    { "id": "Msg_MessageFriends_Friends", "source": "Task_MessageFriends", "target": "Event_Friends_Receive", "type": "messageFlow", "name": "Build Help" },
+    { "id": "Msg_SendInvites_Friends", "source": "Task_SendInvites", "target": "Event_Invite_Receive", "type": "messageFlow", "name": "Invitations" }
+    ]
+    },
+    {
+    "id": "Architect_Pool",
+    "name": "Architect",
+    "nodes": [
+    { "id": "Start_Architect", "type": "startEvent", "name": "Start", "eventDefinitionType": "MessageEventDefinition" },
+    { "id": "Task_CreateDraft", "type": "userTask", "name": "Create Draft" },
+    { "id": "Data_Draft", "type": "dataobject", "name": "Draft" },
+    { "id": "Task_SendDraft", "type": "sendTask", "name": "Send Draft" },
+    { "id": "Event_Architect_Receive", "type": "intermediateCatchEvent", "name": "Receive Additional", "eventDefinitionType": "MessageEventDefinition" },
+    { "id": "End_Architect", "type": "endEvent", "name": "End" }
+    ],
+    "flows": [
+    { "id": "Flow_Start_Create", "source": "Start_Architect", "target": "Task_CreateDraft", "type": "sequenceFlow" },
+    { "id": "DOA_CreateDraft_Draft", "source": "Task_CreateDraft", "target": "Data_Draft", "type": "dataOutputAssociation" },
+    { "id": "Flow_Create_Send", "source": "Task_CreateDraft", "target": "Task_SendDraft", "type": "sequenceFlow" },
+    { "id": "Flow_Send_End", "source": "Task_SendDraft", "target": "End_Architect", "type": "sequenceFlow" }
+    ]
+    },
+    {
+    "id": "OnlineStores_Pool",
+    "name": "Online Stores",
+    "nodes": [
+    { "id": "Event_Order_Receive", "type": "intermediateCatchEvent", "name": "Receive Order", "eventDefinitionType": "MessageEventDefinition" },
+    { "id": "Task_ProcessOrder", "type": "serviceTask", "name": "Process Order" },
+    { "id": "End_Stores", "type": "endEvent", "name": "End" }
+    ],
+    "flows": [
+    { "id": "Flow_Receive_Process", "source": "Event_Order_Receive", "target": "Task_ProcessOrder", "type": "sequenceFlow" },
+    { "id": "Flow_Process_End", "source": "Task_ProcessOrder", "target": "End_Stores", "type": "sequenceFlow" }
+    ]
+    },
+    {
+    "id": "Friends_Pool",
+    "name": "Friends",
+    "nodes": [
+    { "id": "Event_Friends_Receive", "type": "intermediateCatchEvent", "name": "Receive Build Message", "eventDefinitionType": "MessageEventDefinition" },
+    { "id": "Event_Invite_Receive", "type": "intermediateCatchEvent", "name": "Receive Invitation", "eventDefinitionType": "MessageEventDefinition" },
+    { "id": "End_Friends", "type": "endEvent", "name": "End" }
+    ],
+    "flows": [
+    { "id": "Flow_Friends_End", "source": "Event_Friends_Receive", "target": "End_Friends", "type": "sequenceFlow" },
+    { "id": "Flow_Invite_End", "source": "Event_Invite_Receive", "target": "End_Friends", "type": "sequenceFlow" }
+    ]
+    }
+    ]
+    }

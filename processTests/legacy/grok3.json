@@ -1,0 +1,97 @@
+{
+    "pools": [
+      {
+        "id": "TreeHouseBuilder",
+        "name": "Tree House Builder",
+        "nodes": [
+          {"id": "Start", "type": "startEvent", "name": "Decide to build tree house"},
+          {"id": "CollectReq", "type": "userTask", "name": "Collect requirements"},
+          {"id": "SendReq", "type": "sendTask", "name": "Send requirements to Architect"},
+          {"id": "ReceiveDraft", "type": "receiveTask", "name": "Receive draft from Architect"},
+          {"id": "Gateway1", "type": "exclusiveGateway", "name": "Plan satisfactory?"},
+          {"id": "RefineReq", "type": "userTask", "name": "Refine requirements"},
+          {"id": "CreateMaterialList", "type": "userTask", "name": "Create list of materials"},
+          {"id": "ParallelSplit", "type": "parallelGateway", "name": "Split"},
+          {"id": "OrderMaterials", "type": "sendTask", "name": "Order materials from Online Stores"},
+          {"id": "SendMsgToFriends", "type": "sendTask", "name": "Send messages to Friends to build house"},
+          {"id": "ParallelJoin", "type": "parallelGateway", "name": "Join"},
+          {"id": "ReceiveBuildNotification", "type": "receiveTask", "name": "Receive notification that house is built"},
+          {"id": "SendInvitations", "type": "sendTask", "name": "Send invitations for party to Friends"},
+          {"id": "CreateAttendeeList", "type": "userTask", "name": "Create list of attendees"},
+          {"id": "BuySnacks", "type": "userTask", "name": "Buy snacks"},
+          {"id": "End", "type": "endEvent", "name": "Party ready"}
+        ],
+        "flows": [
+          {"id": "Seq1", "source": "Start", "target": "CollectReq", "type": "sequenceFlow"},
+          {"id": "Seq2", "source": "CollectReq", "target": "SendReq", "type": "sequenceFlow"},
+          {"id": "Seq3", "source": "SendReq", "target": "ReceiveDraft", "type": "sequenceFlow"},
+          {"id": "Seq4", "source": "ReceiveDraft", "target": "Gateway1", "type": "sequenceFlow"},
+          {"id": "Seq5", "source": "Gateway1", "target": "RefineReq", "type": "sequenceFlow", "condition": "No", "name": "No"},
+          {"id": "Seq6", "source": "RefineReq", "target": "SendReq", "type": "sequenceFlow"},
+          {"id": "Seq7", "source": "Gateway1", "target": "CreateMaterialList", "type": "sequenceFlow", "condition": "Yes", "name": "Yes"},
+          {"id": "Seq8", "source": "CreateMaterialList", "target": "ParallelSplit", "type": "sequenceFlow"},
+          {"id": "Seq9", "source": "ParallelSplit", "target": "OrderMaterials", "type": "sequenceFlow"},
+          {"id": "Seq10", "source": "ParallelSplit", "target": "SendMsgToFriends", "type": "sequenceFlow"},
+          {"id": "Seq11", "source": "OrderMaterials", "target": "ParallelJoin", "type": "sequenceFlow"},
+          {"id": "Seq12", "source": "SendMsgToFriends", "target": "ParallelJoin", "type": "sequenceFlow"},
+          {"id": "Seq13", "source": "ParallelJoin", "target": "ReceiveBuildNotification", "type": "sequenceFlow"},
+          {"id": "Seq14", "source": "ReceiveBuildNotification", "target": "SendInvitations", "type": "sequenceFlow"},
+          {"id": "Seq15", "source": "SendInvitations", "target": "CreateAttendeeList", "type": "sequenceFlow"},
+          {"id": "Seq16", "source": "CreateAttendeeList", "target": "BuySnacks", "type": "sequenceFlow"},
+          {"id": "Seq17", "source": "BuySnacks", "target": "End", "type": "sequenceFlow"},
+          {"id": "Msg1", "source": "SendReq", "target": "ArchitectStart", "type": "messageFlow", "name": "Send requirements"},
+          {"id": "Msg2", "source": "OrderMaterials", "target": "OnlineStoresStart", "type": "messageFlow", "name": "Order materials"},
+          {"id": "Msg3", "source": "SendMsgToFriends", "target": "FriendsStartBuild", "type": "messageFlow", "name": "Send build message"},
+          {"id": "Msg4", "source": "SendInvitations", "target": "FriendsStartParty", "type": "messageFlow", "name": "Send party invitation"}
+        ]
+      },
+      {
+        "id": "Architect",
+        "name": "Architect",
+        "nodes": [
+          {"id": "ArchitectStart", "type": "startEvent", "eventDefinitionType": "MessageEventDefinition", "name": "Receive requirements"},
+          {"id": "CreateDraft", "type": "userTask", "name": "Create draft"},
+          {"id": "SendDraft", "type": "sendTask", "name": "Send draft to Tree House Builder"},
+          {"id": "ArchitectEnd", "type": "endEvent"}
+        ],
+        "flows": [
+          {"id": "SeqA1", "source": "ArchitectStart", "target": "CreateDraft", "type": "sequenceFlow"},
+          {"id": "SeqA2", "source": "CreateDraft", "target": "SendDraft", "type": "sequenceFlow"},
+          {"id": "SeqA3", "source": "SendDraft", "target": "ArchitectEnd", "type": "sequenceFlow"},
+          {"id": "MsgA1", "source": "SendDraft", "target": "ReceiveDraft", "type": "messageFlow", "name": "Send draft"}
+        ]
+      },
+      {
+        "id": "OnlineStores",
+        "name": "Online Stores",
+        "nodes": [
+          {"id": "OnlineStoresStart", "type": "startEvent", "eventDefinitionType": "MessageEventDefinition", "name": "Receive order"},
+          {"id": "ProcessOrder", "type": "serviceTask", "name": "Process order"},
+          {"id": "OnlineStoresEnd", "type": "endEvent"}
+        ],
+        "flows": [
+          {"id": "SeqO1", "source": "OnlineStoresStart", "target": "ProcessOrder", "type": "sequenceFlow"},
+          {"id": "SeqO2", "source": "ProcessOrder", "target": "OnlineStoresEnd", "type": "sequenceFlow"}
+        ]
+      },
+      {
+        "id": "Friends",
+        "name": "Friends",
+        "nodes": [
+          {"id": "FriendsStartBuild", "type": "startEvent", "eventDefinitionType": "MessageEventDefinition", "name": "Receive message to build house"},
+          {"id": "BuildHouse", "type": "manualTask", "name": "Build house"},
+          {"id": "SendBuildNotification", "type": "sendTask", "name": "Send notification that house is built"},
+          {"id": "FriendsEndBuild", "type": "endEvent"},
+          {"id": "FriendsStartParty", "type": "startEvent", "eventDefinitionType": "MessageEventDefinition", "name": "Receive party invitation"},
+          {"id": "FriendsEndParty", "type": "endEvent"}
+        ],
+        "flows": [
+          {"id": "SeqF1", "source": "FriendsStartBuild", "target": "BuildHouse", "type": "sequenceFlow"},
+          {"id": "SeqF2", "source": "BuildHouse", "target": "SendBuildNotification", "type": "sequenceFlow"},
+          {"id": "SeqF3", "source": "SendBuildNotification", "target": "FriendsEndBuild", "type": "sequenceFlow"},
+          {"id": "SeqF4", "source": "FriendsStartParty", "target": "FriendsEndParty", "type": "sequenceFlow"},
+          {"id": "MsgF1", "source": "SendBuildNotification", "target": "ReceiveBuildNotification", "type": "messageFlow", "name": "Send build notification"}
+        ]
+      }
+    ]
+  }

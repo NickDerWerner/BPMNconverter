@@ -1,0 +1,165 @@
+{
+    "pools": [
+      {
+        "id": "Builder_Pool",
+        "name": "Builder",
+        "nodes": [
+          { "id": "Builder_Start", "type": "startEvent", "name": "Initiate Tree House Project" },
+          { "id": "Builder_CollectRequirements", "type": "userTask", "name": "Collect Requirements" },
+          { "id": "Builder_Data_Requirements", "type": "dataobject", "name": "Requirements" },
+          { "id": "Builder_SendRequirements", "type": "sendTask", "name": "Send Requirements to Architect" },
+          { "id": "Builder_Catch_Draft", "type": "intermediateCatchEvent", "name": "Receive Draft", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Builder_Gateway_Refine", "type": "exclusiveGateway", "name": "Draft Satisfactory?" },
+          { "id": "Builder_AddRequirements", "type": "userTask", "name": "Add Additional Requirements" },
+          { "id": "Builder_CreateMaterials", "type": "userTask", "name": "Create Materials List" },
+          { "id": "Builder_Data_MaterialsList", "type": "dataobject", "name": "Materials List" },
+          { "id": "Builder_Gateway_Split", "type": "parallelGateway", "name": "Start Parallel Ordering and Coordination" },
+          { "id": "Builder_OrderLumber", "type": "sendTask", "name": "Order Lumber" },
+          { "id": "Builder_Catch_Lumber", "type": "intermediateCatchEvent", "name": "Receive Lumber", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Builder_OrderHardware", "type": "sendTask", "name": "Order Hardware" },
+          { "id": "Builder_Catch_Hardware", "type": "intermediateCatchEvent", "name": "Receive Hardware", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Builder_OrderDecor", "type": "sendTask", "name": "Order Decorations" },
+          { "id": "Builder_Catch_Decor", "type": "intermediateCatchEvent", "name": "Receive Decorations", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Builder_RequestFriends", "type": "sendTask", "name": "Request Friends Help" },
+          { "id": "Builder_Catch_FriendsConfirm", "type": "intermediateCatchEvent", "name": "Receive Friends Confirmation", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Builder_Gateway_Join", "type": "parallelGateway", "name": "All Materials & Help Ready" },
+          { "id": "Builder_BuildHouse", "type": "manualTask", "name": "Build Tree House" },
+          { "id": "Builder_SendInvitations", "type": "sendTask", "name": "Send Party Invitations" },
+          { "id": "Builder_Catch_RSVP", "type": "intermediateCatchEvent", "name": "Receive RSVPs", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Builder_CreateAttendeeList", "type": "userTask", "name": "Create Attendee List" },
+          { "id": "Builder_Data_AttendeeList", "type": "dataobject", "name": "Attendee List" },
+          { "id": "Builder_End", "type": "endEvent", "name": "Project Complete" }
+        ],
+        "flows": [
+          { "id": "B_Seq1_Start_Collect", "source": "Builder_Start", "target": "Builder_CollectRequirements", "type": "sequenceFlow" },
+          { "id": "B_DOA_Collect_Requirements", "source": "Builder_CollectRequirements", "target": "Builder_Data_Requirements", "type": "dataOutputAssociation" },
+          { "id": "B_Seq2_Collect_SendRequirements", "source": "Builder_CollectRequirements", "target": "Builder_SendRequirements", "type": "sequenceFlow" },
+          { "id": "B_DIA_Requirements_Send", "source": "Builder_Data_Requirements", "target": "Builder_SendRequirements", "type": "dataInputAssociation" },
+          { "id": "B_Msg_SendRequirements", "source": "Builder_SendRequirements", "target": "Architect_Start_Receive", "type": "messageFlow", "name": "Requirements" },
+          { "id": "B_Seq3_Send_CatchDraft", "source": "Builder_SendRequirements", "target": "Builder_Catch_Draft", "type": "sequenceFlow" },
+          { "id": "B_Seq4_CatchDraft_GatewayRefine", "source": "Builder_Catch_Draft", "target": "Builder_Gateway_Refine", "type": "sequenceFlow" },
+          { "id": "B_Seq5_Refine_To_AddRequirements", "source": "Builder_Gateway_Refine", "target": "Builder_AddRequirements", "type": "sequenceFlow", "condition": "Needs refinement", "name": "Needs refinement" },
+          { "id": "B_Seq6_Refine_To_CreateMaterials", "source": "Builder_Gateway_Refine", "target": "Builder_CreateMaterials", "type": "sequenceFlow", "isDefault": true },
+          { "id": "B_Seq7_AddRequirements_SendRequirements", "source": "Builder_AddRequirements", "target": "Builder_SendRequirements", "type": "sequenceFlow" },
+          { "id": "B_DOA_AddRequirements_Requirements", "source": "Builder_AddRequirements", "target": "Builder_Data_Requirements", "type": "dataOutputAssociation" },
+          { "id": "B_Seq8_CreateMaterials_Split", "source": "Builder_CreateMaterials", "target": "Builder_Gateway_Split", "type": "sequenceFlow" },
+          { "id": "B_DOA_CreateMaterials_MaterialsList", "source": "Builder_CreateMaterials", "target": "Builder_Data_MaterialsList", "type": "dataOutputAssociation" },
+          { "id": "B_Seq9_Split_OrderLumber", "source": "Builder_Gateway_Split", "target": "Builder_OrderLumber", "type": "sequenceFlow" },
+          { "id": "B_Seq10_Split_OrderHardware", "source": "Builder_Gateway_Split", "target": "Builder_OrderHardware", "type": "sequenceFlow" },
+          { "id": "B_Seq11_Split_OrderDecor", "source": "Builder_Gateway_Split", "target": "Builder_OrderDecor", "type": "sequenceFlow" },
+          { "id": "B_Seq12_Split_RequestFriends", "source": "Builder_Gateway_Split", "target": "Builder_RequestFriends", "type": "sequenceFlow" },
+          { "id": "B_DIA_Materials_OrderLumber", "source": "Builder_Data_MaterialsList", "target": "Builder_OrderLumber", "type": "dataInputAssociation" },
+          { "id": "B_DIA_Materials_OrderHardware", "source": "Builder_Data_MaterialsList", "target": "Builder_OrderHardware", "type": "dataInputAssociation" },
+          { "id": "B_DIA_Materials_OrderDecor", "source": "Builder_Data_MaterialsList", "target": "Builder_OrderDecor", "type": "dataInputAssociation" },
+          { "id": "B_Msg_OrderLumber", "source": "Builder_OrderLumber", "target": "LumberStore_Start_ReceiveOrder", "type": "messageFlow", "name": "Lumber Order" },
+          { "id": "B_Seq13_OrderLumber_Catch", "source": "Builder_OrderLumber", "target": "Builder_Catch_Lumber", "type": "sequenceFlow" },
+          { "id": "B_Msg_OrderHardware", "source": "Builder_OrderHardware", "target": "HardwareStore_Start_ReceiveOrder", "type": "messageFlow", "name": "Hardware Order" },
+          { "id": "B_Seq14_OrderHardware_Catch", "source": "Builder_OrderHardware", "target": "Builder_Catch_Hardware", "type": "sequenceFlow" },
+          { "id": "B_Msg_OrderDecor", "source": "Builder_OrderDecor", "target": "DecorStore_Start_ReceiveOrder", "type": "messageFlow", "name": "Decorations Order" },
+          { "id": "B_Seq15_OrderDecor_Catch", "source": "Builder_OrderDecor", "target": "Builder_Catch_Decor", "type": "sequenceFlow" },
+          { "id": "B_Msg_RequestFriendsHelp", "source": "Builder_RequestFriends", "target": "Friends_Start_Help", "type": "messageFlow", "name": "Help Request" },
+          { "id": "B_Seq16_RequestFriends_CatchConfirm", "source": "Builder_RequestFriends", "target": "Builder_Catch_FriendsConfirm", "type": "sequenceFlow" },
+          { "id": "B_Seq17_CatchLumber_Join", "source": "Builder_Catch_Lumber", "target": "Builder_Gateway_Join", "type": "sequenceFlow" },
+          { "id": "B_Seq18_CatchHardware_Join", "source": "Builder_Catch_Hardware", "target": "Builder_Gateway_Join", "type": "sequenceFlow" },
+          { "id": "B_Seq19_CatchDecor_Join", "source": "Builder_Catch_Decor", "target": "Builder_Gateway_Join", "type": "sequenceFlow" },
+          { "id": "B_Seq20_CatchConfirm_Join", "source": "Builder_Catch_FriendsConfirm", "target": "Builder_Gateway_Join", "type": "sequenceFlow" },
+          { "id": "B_Seq21_Join_BuildHouse", "source": "Builder_Gateway_Join", "target": "Builder_BuildHouse", "type": "sequenceFlow" },
+          { "id": "B_Seq22_Build_SendInvitations", "source": "Builder_BuildHouse", "target": "Builder_SendInvitations", "type": "sequenceFlow" },
+          { "id": "B_Msg_PartyInvitations", "source": "Builder_SendInvitations", "target": "Friends_Start_PartyInvitation", "type": "messageFlow", "name": "Party Invitations" },
+          { "id": "B_Seq23_SendInvitations_CatchRSVP", "source": "Builder_SendInvitations", "target": "Builder_Catch_RSVP", "type": "sequenceFlow" },
+          { "id": "B_Seq24_CatchRSVP_CreateAttendees", "source": "Builder_Catch_RSVP", "target": "Builder_CreateAttendeeList", "type": "sequenceFlow" },
+          { "id": "B_DOA_CreateAttendees_AttendeeList", "source": "Builder_CreateAttendeeList", "target": "Builder_Data_AttendeeList", "type": "dataOutputAssociation" },
+          { "id": "B_Seq25_CreateAttendees_End", "source": "Builder_CreateAttendeeList", "target": "Builder_End", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "Architect_Pool",
+        "name": "Tree House Architect",
+        "nodes": [
+          { "id": "Architect_Start_Receive", "type": "startEvent", "name": "Receive Requirements", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Architect_CreateDraft", "type": "serviceTask", "name": "Create Draft" },
+          { "id": "Architect_SendDraft", "type": "sendTask", "name": "Send Draft to Builder" },
+          { "id": "Architect_End", "type": "endEvent", "name": "Draft Sent" }
+        ],
+        "flows": [
+          { "id": "A_Seq1_Start_Create", "source": "Architect_Start_Receive", "target": "Architect_CreateDraft", "type": "sequenceFlow" },
+          { "id": "A_Seq2_Create_Send", "source": "Architect_CreateDraft", "target": "Architect_SendDraft", "type": "sequenceFlow" },
+          { "id": "A_Msg_SendDraft", "source": "Architect_SendDraft", "target": "Builder_Catch_Draft", "type": "messageFlow", "name": "Draft" },
+          { "id": "A_Seq3_Send_End", "source": "Architect_SendDraft", "target": "Architect_End", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "LumberStore_Pool",
+        "name": "Lumber Store",
+        "nodes": [
+          { "id": "LumberStore_Start_ReceiveOrder", "type": "startEvent", "name": "Receive Lumber Order", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "LumberStore_ProcessOrder", "type": "serviceTask", "name": "Process Lumber Order" },
+          { "id": "LumberStore_SendShipment", "type": "sendTask", "name": "Ship Lumber" },
+          { "id": "LumberStore_End", "type": "endEvent", "name": "Lumber Shipped" }
+        ],
+        "flows": [
+          { "id": "L_Seq1_Start_Process", "source": "LumberStore_Start_ReceiveOrder", "target": "LumberStore_ProcessOrder", "type": "sequenceFlow" },
+          { "id": "L_Seq2_Process_Send", "source": "LumberStore_ProcessOrder", "target": "LumberStore_SendShipment", "type": "sequenceFlow" },
+          { "id": "L_Msg_ShipLumber", "source": "LumberStore_SendShipment", "target": "Builder_Catch_Lumber", "type": "messageFlow", "name": "Lumber Delivered" },
+          { "id": "L_Seq3_Send_End", "source": "LumberStore_SendShipment", "target": "LumberStore_End", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "HardwareStore_Pool",
+        "name": "Hardware Store",
+        "nodes": [
+          { "id": "HardwareStore_Start_ReceiveOrder", "type": "startEvent", "name": "Receive Hardware Order", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "HardwareStore_ProcessOrder", "type": "serviceTask", "name": "Process Hardware Order" },
+          { "id": "HardwareStore_SendShipment", "type": "sendTask", "name": "Ship Hardware" },
+          { "id": "HardwareStore_End", "type": "endEvent", "name": "Hardware Shipped" }
+        ],
+        "flows": [
+          { "id": "H_Seq1_Start_Process", "source": "HardwareStore_Start_ReceiveOrder", "target": "HardwareStore_ProcessOrder", "type": "sequenceFlow" },
+          { "id": "H_Seq2_Process_Send", "source": "HardwareStore_ProcessOrder", "target": "HardwareStore_SendShipment", "type": "sequenceFlow" },
+          { "id": "H_Msg_ShipHardware", "source": "HardwareStore_SendShipment", "target": "Builder_Catch_Hardware", "type": "messageFlow", "name": "Hardware Delivered" },
+          { "id": "H_Seq3_Send_End", "source": "HardwareStore_SendShipment", "target": "HardwareStore_End", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "DecorStore_Pool",
+        "name": "Decorations Store",
+        "nodes": [
+          { "id": "DecorStore_Start_ReceiveOrder", "type": "startEvent", "name": "Receive Decorations Order", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "DecorStore_ProcessOrder", "type": "serviceTask", "name": "Process Decorations Order" },
+          { "id": "DecorStore_SendShipment", "type": "sendTask", "name": "Ship Decorations" },
+          { "id": "DecorStore_End", "type": "endEvent", "name": "Decorations Shipped" }
+        ],
+        "flows": [
+          { "id": "D_Seq1_Start_Process", "source": "DecorStore_Start_ReceiveOrder", "target": "DecorStore_ProcessOrder", "type": "sequenceFlow" },
+          { "id": "D_Seq2_Process_Send", "source": "DecorStore_ProcessOrder", "target": "DecorStore_SendShipment", "type": "sequenceFlow" },
+          { "id": "D_Msg_ShipDecor", "source": "DecorStore_SendShipment", "target": "Builder_Catch_Decor", "type": "messageFlow", "name": "Decorations Delivered" },
+          { "id": "D_Seq3_Send_End", "source": "DecorStore_SendShipment", "target": "DecorStore_End", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "Friends_Pool",
+        "name": "Friends",
+        "nodes": [
+          { "id": "Friends_Start_Help", "type": "startEvent", "name": "Help Request Received", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Friends_AgreeHelp", "type": "userTask", "name": "Agree to Help" },
+          { "id": "Friends_SendConfirmHelp", "type": "sendTask", "name": "Send Help Confirmation" },
+          { "id": "Friends_End_Help", "type": "endEvent", "name": "Help Confirmation Sent" },
+          { "id": "Friends_Start_PartyInvitation", "type": "startEvent", "name": "Party Invitation Received", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Friends_RSVP", "type": "userTask", "name": "Prepare RSVP" },
+          { "id": "Friends_SendRSVP", "type": "sendTask", "name": "Send RSVP" },
+          { "id": "Friends_End_RSVP", "type": "endEvent", "name": "RSVP Sent" }
+        ],
+        "flows": [
+          { "id": "F_Seq1_Help_Start_Agree", "source": "Friends_Start_Help", "target": "Friends_AgreeHelp", "type": "sequenceFlow" },
+          { "id": "F_Seq2_Agree_SendConfirm", "source": "Friends_AgreeHelp", "target": "Friends_SendConfirmHelp", "type": "sequenceFlow" },
+          { "id": "F_Msg_ConfirmHelp", "source": "Friends_SendConfirmHelp", "target": "Builder_Catch_FriendsConfirm", "type": "messageFlow", "name": "Help Confirmation" },
+          { "id": "F_Seq3_SendConfirm_End", "source": "Friends_SendConfirmHelp", "target": "Friends_End_Help", "type": "sequenceFlow" },
+          { "id": "F_Seq4_Party_Start_RSVP", "source": "Friends_Start_PartyInvitation", "target": "Friends_RSVP", "type": "sequenceFlow" },
+          { "id": "F_Seq5_RSVP_Send", "source": "Friends_RSVP", "target": "Friends_SendRSVP", "type": "sequenceFlow" },
+          { "id": "F_Msg_SendRSVP", "source": "Friends_SendRSVP", "target": "Builder_Catch_RSVP", "type": "messageFlow", "name": "RSVP" },
+          { "id": "F_Seq6_SendRSVP_End", "source": "Friends_SendRSVP", "target": "Friends_End_RSVP", "type": "sequenceFlow" }
+        ]
+      }
+    ]
+  }
+  
