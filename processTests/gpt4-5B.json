@@ -1,0 +1,84 @@
+
+{
+  "pools": [
+    {
+      "id": "pool_builder",
+      "name": "Builder",
+      "nodes": [
+        {"id": "start_builder", "type": "startEvent", "name": "Start"},
+        {"id": "collect_requirements", "type": "task", "name": "Collect Requirements"},
+        {"id": "send_requirements", "type": "sendTask", "name": "Send Requirements"},
+        {"id": "receive_draft", "type": "receiveTask", "name": "Receive Draft"},
+        {"id": "refine_requirements", "type": "task", "name": "Refine Requirements"},
+        {"id": "gateway_refine", "type": "exclusiveGateway", "name": "Draft OK?"},
+        {"id": "create_material_list", "type": "task", "name": "Create Material List"},
+        {"id": "order_materials", "type": "sendTask", "name": "Order Materials"},
+        {"id": "parallel_gateway_split", "type": "parallelGateway"},
+        {"id": "message_friends", "type": "sendTask", "name": "Message Friends"},
+        {"id": "parallel_gateway_join", "type": "parallelGateway"},
+        {"id": "build_house", "type": "task", "name": "Build House"},
+        {"id": "send_invitations", "type": "sendTask", "name": "Send Invitations"},
+        {"id": "create_attendee_list", "type": "task", "name": "Create Attendee List"},
+        {"id": "buy_snacks", "type": "task", "name": "Buy Snacks"},
+        {"id": "end_builder", "type": "endEvent", "name": "End"}
+      ],
+      "flows": [
+        {"id": "flow_start_collect", "source": "start_builder", "target": "collect_requirements", "type": "sequenceFlow"},
+        {"id": "flow_collect_send", "source": "collect_requirements", "target": "send_requirements", "type": "sequenceFlow"},
+        {"id": "msg_builder_to_architect", "source": "send_requirements", "target": "receive_requirements", "type": "messageFlow", "name": "Requirements"},
+        {"id": "flow_send_receive", "source": "send_requirements", "target": "receive_draft", "type": "sequenceFlow"},
+        {"id": "flow_receive_refine", "source": "receive_draft", "target": "refine_requirements", "type": "sequenceFlow"},
+        {"id": "flow_refine_gateway", "source": "refine_requirements", "target": "gateway_refine", "type": "sequenceFlow"},
+        {"id": "flow_gateway_back", "source": "gateway_refine", "target": "send_requirements", "type": "sequenceFlow", "condition": "No"},
+        {"id": "flow_gateway_continue", "source": "gateway_refine", "target": "create_material_list", "type": "sequenceFlow", "condition": "Yes"},
+        {"id": "flow_create_order", "source": "create_material_list", "target": "order_materials", "type": "sequenceFlow"},
+        {"id": "flow_order_parallel", "source": "order_materials", "target": "parallel_gateway_split", "type": "sequenceFlow"},
+        {"id": "flow_parallel_friends", "source": "parallel_gateway_split", "target": "message_friends", "type": "sequenceFlow"},
+        {"id": "flow_friends_join", "source": "message_friends", "target": "parallel_gateway_join", "type": "sequenceFlow"},
+        {"id": "flow_parallel_join", "source": "parallel_gateway_split", "target": "parallel_gateway_join", "type": "sequenceFlow"},
+        {"id": "flow_join_build", "source": "parallel_gateway_join", "target": "build_house", "type": "sequenceFlow"},
+        {"id": "flow_build_invite", "source": "build_house", "target": "send_invitations", "type": "sequenceFlow"},
+        {"id": "flow_invite_list", "source": "send_invitations", "target": "create_attendee_list", "type": "sequenceFlow"},
+        {"id": "flow_list_snacks", "source": "create_attendee_list", "target": "buy_snacks", "type": "sequenceFlow"},
+        {"id": "flow_snacks_end", "source": "buy_snacks", "target": "end_builder", "type": "sequenceFlow"}
+      ]
+    },
+    {
+      "id": "pool_architect",
+      "name": "Architect",
+      "nodes": [
+        {"id": "receive_requirements", "type": "startEvent", "name": "Receive Requirements", "eventDefinitionType": "MessageEventDefinition"},
+        {"id": "draft_plan", "type": "task", "name": "Draft Plan"},
+        {"id": "send_draft", "type": "sendTask", "name": "Send Draft"}
+      ],
+      "flows": [
+        {"id": "flow_receive_draft", "source": "receive_requirements", "target": "draft_plan", "type": "sequenceFlow"},
+        {"id": "flow_draft_send", "source": "draft_plan", "target": "send_draft", "type": "sequenceFlow"},
+        {"id": "msg_architect_to_builder", "source": "send_draft", "target": "receive_draft", "type": "messageFlow", "name": "Draft"}
+      ]
+    },
+    {
+      "id": "pool_online_stores",
+      "name": "Online Stores",
+      "nodes": [
+        {"id": "receive_order", "type": "startEvent", "name": "Receive Order", "eventDefinitionType": "MessageEventDefinition"},
+        {"id": "process_order", "type": "task", "name": "Process Order"}
+      ],
+      "flows": [
+        {"id": "flow_receive_process", "source": "receive_order", "target": "process_order", "type": "sequenceFlow"}
+      ]
+    },
+    {
+      "id": "pool_friends",
+      "name": "Friends",
+      "nodes": [
+        {"id": "receive_message", "type": "startEvent", "name": "Receive Message", "eventDefinitionType": "MessageEventDefinition"},
+        {"id": "build_house_friends", "type": "task", "name": "Build House"},
+        {"id": "receive_invitation", "type": "startEvent", "name": "Receive Invitation", "eventDefinitionType": "MessageEventDefinition"}
+      ],
+      "flows": [
+        {"id": "flow_receive_build", "source": "receive_message", "target": "build_house_friends", "type": "sequenceFlow"}
+      ]
+    }
+  ]
+}

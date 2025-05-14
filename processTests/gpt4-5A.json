@@ -1,0 +1,89 @@
+{
+    "pools": [
+      {
+        "id": "pool_builder",
+        "name": "Builder",
+        "nodes": [
+          {"id": "start_builder", "type": "startEvent", "name": "Start Treehouse Project"},
+          {"id": "collect_requirements", "type": "userTask", "name": "Collect Requirements"},
+          {"id": "send_requirements", "type": "sendTask", "name": "Send Requirements to Architect"},
+          {"id": "receive_draft", "type": "receiveTask", "name": "Receive Draft from Architect"},
+          {"id": "review_draft", "type": "userTask", "name": "Review Draft"},
+          {"id": "gateway_refine_more", "type": "exclusiveGateway", "name": "More Refinement Needed?"},
+          {"id": "create_material_list", "type": "userTask", "name": "Create List of Materials"},
+          {"id": "materials_list", "type": "dataobject", "name": "Materials List"},
+          {"id": "parallel_gateway_start", "type": "parallelGateway"},
+          {"id": "order_materials", "type": "sendTask", "name": "Order Materials from Stores"},
+          {"id": "invite_friends", "type": "sendTask", "name": "Invite Friends to Build"},
+          {"id": "receive_materials", "type": "receiveTask", "name": "Materials Received"},
+          {"id": "house_built", "type": "userTask", "name": "Build Treehouse"},
+          {"id": "invite_party", "type": "sendTask", "name": "Send Party Invitations"},
+          {"id": "list_attendees", "type": "dataobject", "name": "Party Attendee List"},
+          {"id": "buy_snacks", "type": "userTask", "name": "Buy Snacks"},
+          {"id": "end_builder", "type": "endEvent", "name": "Project Completed"}
+        ],
+        "flows": [
+          {"id": "flow_start_collect", "source": "start_builder", "target": "collect_requirements", "type": "sequenceFlow"},
+          {"id": "flow_collect_send", "source": "collect_requirements", "target": "send_requirements", "type": "sequenceFlow"},
+          {"id": "msg_send_requirements", "source": "send_requirements", "target": "start_architect", "type": "messageFlow", "name": "Send Requirements"},
+          {"id": "flow_send_receive", "source": "send_requirements", "target": "receive_draft", "type": "sequenceFlow"},
+          {"id": "flow_receive_review", "source": "receive_draft", "target": "review_draft", "type": "sequenceFlow"},
+          {"id": "flow_review_gateway", "source": "review_draft", "target": "gateway_refine_more", "type": "sequenceFlow"},
+          {"id": "flow_gateway_collect", "source": "gateway_refine_more", "target": "collect_requirements", "type": "sequenceFlow", "condition": "More Refinements Needed"},
+          {"id": "flow_gateway_material_list", "source": "gateway_refine_more", "target": "create_material_list", "type": "sequenceFlow", "condition": "Requirements Complete"},
+          {"id": "flow_material_list_data", "source": "create_material_list", "target": "materials_list", "type": "dataOutputAssociation"},
+          {"id": "flow_material_list_parallel", "source": "create_material_list", "target": "parallel_gateway_start", "type": "sequenceFlow"},
+          {"id": "flow_parallel_order", "source": "parallel_gateway_start", "target": "order_materials", "type": "sequenceFlow"},
+          {"id": "flow_parallel_invite", "source": "parallel_gateway_start", "target": "invite_friends", "type": "sequenceFlow"},
+          {"id": "flow_order_receive", "source": "order_materials", "target": "receive_materials", "type": "sequenceFlow"},
+          {"id": "flow_receive_build", "source": "receive_materials", "target": "house_built", "type": "sequenceFlow"},
+          {"id": "flow_build_party", "source": "house_built", "target": "invite_party", "type": "sequenceFlow"},
+          {"id": "flow_party_list", "source": "invite_party", "target": "list_attendees", "type": "dataOutputAssociation"},
+          {"id": "flow_party_snacks", "source": "invite_party", "target": "buy_snacks", "type": "sequenceFlow"},
+          {"id": "flow_snacks_end", "source": "buy_snacks", "target": "end_builder", "type": "sequenceFlow"}
+        ]
+      },
+      {
+        "id": "pool_architect",
+        "name": "Architect",
+        "nodes": [
+          {"id": "start_architect", "type": "startEvent", "name": "Receive Requirements", "eventDefinitionType": "MessageEventDefinition"},
+          {"id": "draft_plan", "type": "userTask", "name": "Draft Treehouse Plan"},
+          {"id": "send_draft", "type": "sendTask", "name": "Send Draft to Builder"}
+        ],
+        "flows": [
+          {"id": "flow_start_draft", "source": "start_architect", "target": "draft_plan", "type": "sequenceFlow"},
+          {"id": "flow_draft_send", "source": "draft_plan", "target": "send_draft", "type": "sequenceFlow"},
+          {"id": "msg_send_draft", "source": "send_draft", "target": "receive_draft", "type": "messageFlow", "name": "Send Draft"}
+        ]
+      },
+      {
+        "id": "pool_online_stores",
+        "name": "Online Stores",
+        "nodes": [
+          {"id": "start_receive_order", "type": "startEvent", "name": "Receive Material Order", "eventDefinitionType": "MessageEventDefinition"},
+          {"id": "process_order", "type": "serviceTask", "name": "Process Material Order"},
+          {"id": "ship_order", "type": "sendTask", "name": "Ship Materials"}
+        ],
+        "flows": [
+          {"id": "flow_receive_process", "source": "start_receive_order", "target": "process_order", "type": "sequenceFlow"},
+          {"id": "flow_process_ship", "source": "process_order", "target": "ship_order", "type": "sequenceFlow"},
+          {"id": "msg_ship_materials", "source": "ship_order", "target": "receive_materials", "type": "messageFlow", "name": "Materials Shipped"}
+        ]
+      },
+      {
+        "id": "pool_friends",
+        "name": "Friends",
+        "nodes": [
+          {"id": "start_receive_invite", "type": "startEvent", "name": "Receive Invitation", "eventDefinitionType": "MessageEventDefinition"},
+          {"id": "build_treehouse", "type": "userTask", "name": "Help Build Treehouse"},
+          {"id": "end_helping", "type": "endEvent", "name": "Building Complete"}
+        ],
+        "flows": [
+          {"id": "flow_invite_build", "source": "start_receive_invite", "target": "build_treehouse", "type": "sequenceFlow"},
+          {"id": "flow_build_end", "source": "build_treehouse", "target": "end_helping", "type": "sequenceFlow"}
+        ]
+      }
+    ]
+  }
+  

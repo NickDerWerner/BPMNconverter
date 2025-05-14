@@ -1,0 +1,153 @@
+{
+    "pools": [
+      {
+        "id": "Pool_Owner",
+        "name": "Tree House Owner",
+        "nodes": [
+          { "id": "Owner_Start", "type": "startEvent", "name": "Start Tree House Project" },
+          { "id": "Owner_Task_CollectReq", "type": "userTask", "name": "Collect Requirements" },
+          { "id": "Owner_DO_Requirements", "type": "dataobject", "name": "Requirements" },
+          { "id": "Owner_Task_SendReqToArch", "type": "sendTask", "name": "Send Requirements to Architect" },
+          { "id": "Owner_Event_ReceiveDraft", "type": "intermediateCatchEvent", "name": "Receive Draft Plan", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Owner_DO_Plan", "type": "dataobject", "name": "Tree House Plan" },
+          { "id": "Owner_Task_ReviewPlanAndRevise", "type": "userTask", "name": "Review Plan & Define Revisions" },
+          { "id": "Owner_DO_Revisions", "type": "dataobject", "name": "Plan Revisions" },
+          { "id": "Owner_Gate_RevisionsNeeded", "type": "exclusiveGateway", "name": "Revisions Needed?" },
+          { "id": "Owner_Task_SendRevisionsToArch", "type": "sendTask", "name": "Send Revisions to Architect" },
+          { "id": "Owner_Event_ReceiveUpdatedPlan", "type": "intermediateCatchEvent", "name": "Receive Updated Plan", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Owner_Task_SendFinalApprovalToArch", "type": "sendTask", "name": "Send Final Approval to Architect" },
+          { "id": "Owner_Task_CreateMaterialList", "type": "userTask", "name": "Create List of Needed Materials" },
+          { "id": "Owner_DO_MaterialList", "type": "dataobject", "name": "Material List" },
+          { "id": "Owner_Task_PlaceMaterialOrders", "type": "userTask", "name": "Place Material Orders from Several Stores" },
+          { "id": "Owner_DO_PlacedOrders", "type": "dataobject", "name": "Placed Material Orders" },
+          { "id": "Owner_Gate_Parallel_Split", "type": "parallelGateway", "name": "Fork: Order Materials & Contact Friends" },
+          { "id": "Owner_Task_SendMaterialOrders", "type": "sendTask", "name": "Send Material Orders to Stores" },
+          { "id": "Owner_Task_SendBuildRequests", "type": "sendTask", "name": "Send Build Requests to Friends" },
+          { "id": "Owner_Gate_Parallel_Join", "type": "parallelGateway", "name": "Join: Orders Sent & Build Requests Sent" },
+          { "id": "Owner_Event_ReceiveHouseBuilt", "type": "intermediateCatchEvent", "name": "Receive House Built Notification", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Owner_Task_SendPartyInvitations", "type": "sendTask", "name": "Send Party Invitations to Friends" },
+          { "id": "Owner_Task_CollectPartyRSVPs", "type": "receiveTask", "name": "Collect Party RSVPs" },
+          { "id": "Owner_DO_RSVP_List", "type": "dataobject", "name": "RSVP List" },
+          { "id": "Owner_Task_CreateAttendeeList", "type": "userTask", "name": "Create List of Attendees" },
+          { "id": "Owner_DO_AttendeeList", "type": "dataobject", "name": "Attendee List" },
+          { "id": "Owner_Task_BuySnacks", "type": "userTask", "name": "Buy Snacks for Party" },
+          { "id": "Owner_End", "type": "endEvent", "name": "Party Ready" }
+        ],
+        "flows": [
+          { "id": "Flow_Owner_1", "source": "Owner_Start", "target": "Owner_Task_CollectReq", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_DOA_Req", "source": "Owner_Task_CollectReq", "target": "Owner_DO_Requirements", "type": "dataOutputAssociation" },
+          { "id": "Flow_Owner_DIA_ReqToSnd", "source": "Owner_DO_Requirements", "target": "Owner_Task_SendReqToArch", "type": "dataInputAssociation" },
+          { "id": "Flow_Owner_2", "source": "Owner_Task_SendReqToArch", "target": "Owner_Event_ReceiveDraft", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_3", "source": "Owner_Event_ReceiveDraft", "target": "Owner_Task_ReviewPlanAndRevise", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_DIA_PlanForReview", "source": "Owner_DO_Plan", "target": "Owner_Task_ReviewPlanAndRevise", "type": "dataInputAssociation" },
+          { "id": "Flow_Owner_DOA_PlanFromReview", "source": "Owner_Task_ReviewPlanAndRevise", "target": "Owner_DO_Plan", "type": "dataOutputAssociation" },
+          { "id": "Flow_Owner_DOA_Revisions", "source": "Owner_Task_ReviewPlanAndRevise", "target": "Owner_DO_Revisions", "type": "dataOutputAssociation" },
+          { "id": "Flow_Owner_4", "source": "Owner_Task_ReviewPlanAndRevise", "target": "Owner_Gate_RevisionsNeeded", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_5_YesRev", "source": "Owner_Gate_RevisionsNeeded", "target": "Owner_Task_SendRevisionsToArch", "type": "sequenceFlow", "name": "Revisions Needed" },
+          { "id": "Flow_Owner_DIA_RevisionsToSend", "source": "Owner_DO_Revisions", "target": "Owner_Task_SendRevisionsToArch", "type": "dataInputAssociation" },
+          { "id": "Flow_Owner_6", "source": "Owner_Task_SendRevisionsToArch", "target": "Owner_Event_ReceiveUpdatedPlan", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_7_Loop", "source": "Owner_Event_ReceiveUpdatedPlan", "target": "Owner_Task_ReviewPlanAndRevise", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_8_NoRev", "source": "Owner_Gate_RevisionsNeeded", "target": "Owner_Task_SendFinalApprovalToArch", "type": "sequenceFlow", "name": "Plan Finalized", "isDefault": true },
+          { "id": "Flow_Owner_9", "source": "Owner_Task_SendFinalApprovalToArch", "target": "Owner_Task_CreateMaterialList", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_DIA_FinalPlanForList", "source": "Owner_DO_Plan", "target": "Owner_Task_CreateMaterialList", "type": "dataInputAssociation" },
+          { "id": "Flow_Owner_DOA_MaterialList", "source": "Owner_Task_CreateMaterialList", "target": "Owner_DO_MaterialList", "type": "dataOutputAssociation" },
+          { "id": "Flow_Owner_10", "source": "Owner_Task_CreateMaterialList", "target": "Owner_Task_PlaceMaterialOrders", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_DIA_MaterialListForOrder", "source": "Owner_DO_MaterialList", "target": "Owner_Task_PlaceMaterialOrders", "type": "dataInputAssociation" },
+          { "id": "Flow_Owner_DOA_PlacedOrders", "source": "Owner_Task_PlaceMaterialOrders", "target": "Owner_DO_PlacedOrders", "type": "dataOutputAssociation" },
+          { "id": "Flow_Owner_11", "source": "Owner_Task_PlaceMaterialOrders", "target": "Owner_Gate_Parallel_Split", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_12a", "source": "Owner_Gate_Parallel_Split", "target": "Owner_Task_SendMaterialOrders", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_DIA_OrdersToSend", "source": "Owner_DO_PlacedOrders", "target": "Owner_Task_SendMaterialOrders", "type": "dataInputAssociation" },
+          { "id": "Flow_Owner_12b", "source": "Owner_Gate_Parallel_Split", "target": "Owner_Task_SendBuildRequests", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_13a", "source": "Owner_Task_SendMaterialOrders", "target": "Owner_Gate_Parallel_Join", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_13b", "source": "Owner_Task_SendBuildRequests", "target": "Owner_Gate_Parallel_Join", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_14", "source": "Owner_Gate_Parallel_Join", "target": "Owner_Event_ReceiveHouseBuilt", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_15", "source": "Owner_Event_ReceiveHouseBuilt", "target": "Owner_Task_SendPartyInvitations", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_16", "source": "Owner_Task_SendPartyInvitations", "target": "Owner_Task_CollectPartyRSVPs", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_DOA_RSVPList", "source": "Owner_Task_CollectPartyRSVPs", "target": "Owner_DO_RSVP_List", "type": "dataOutputAssociation" },
+          { "id": "Flow_Owner_17", "source": "Owner_Task_CollectPartyRSVPs", "target": "Owner_Task_CreateAttendeeList", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_DIA_RSVPForAttendeeList", "source": "Owner_DO_RSVP_List", "target": "Owner_Task_CreateAttendeeList", "type": "dataInputAssociation" },
+          { "id": "Flow_Owner_DOA_AttendeeList", "source": "Owner_Task_CreateAttendeeList", "target": "Owner_DO_AttendeeList", "type": "dataOutputAssociation" },
+          { "id": "Flow_Owner_18", "source": "Owner_Task_CreateAttendeeList", "target": "Owner_Task_BuySnacks", "type": "sequenceFlow" },
+          { "id": "Flow_Owner_DIA_AttendeeListForSnacks", "source": "Owner_DO_AttendeeList", "target": "Owner_Task_BuySnacks", "type": "dataInputAssociation" },
+          { "id": "Flow_Owner_19", "source": "Owner_Task_BuySnacks", "target": "Owner_End", "type": "sequenceFlow" },
+          { "id": "testtest", "source": "Owner_Task_CollectReq", "target": "Owner_Task_SendReqToArch", "type": "sequenceFlow" },
+          { "id": "MsgFlow_Owner_ReqToArch", "source": "Owner_Task_SendReqToArch", "target": "Arch_Start_ReceiveReq", "type": "messageFlow", "name": "Initial Requirements" },
+          { "id": "MsgFlow_Owner_RevToArch", "source": "Owner_Task_SendRevisionsToArch", "target": "Arch_Event_ReceiveFeedback", "type": "messageFlow", "name": "Plan Revisions" },
+          { "id": "MsgFlow_Owner_FinalToArch", "source": "Owner_Task_SendFinalApprovalToArch", "target": "Arch_Event_ReceiveFeedback", "type": "messageFlow", "name": "Final Approval" },
+          { "id": "MsgFlow_Owner_OrdersToStores", "source": "Owner_Task_SendMaterialOrders", "target": "Store_Start_ReceiveOrder", "type": "messageFlow", "name": "Material Orders" },
+          { "id": "MsgFlow_Owner_BuildReqToFriends", "source": "Owner_Task_SendBuildRequests", "target": "Friends_Start_ReceiveBuildReq", "type": "messageFlow", "name": "Build Tree House Request" },
+          { "id": "MsgFlow_Owner_PartyInvToFriends", "source": "Owner_Task_SendPartyInvitations", "target": "Friends_Event_ReceivePartyInvite", "type": "messageFlow", "name": "Party Invitation" }
+        ]
+      },
+      {
+        "id": "Pool_Architect",
+        "name": "Tree House Architect",
+        "nodes": [
+          { "id": "Arch_Start_ReceiveReq", "type": "startEvent", "name": "Receive Requirements", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Arch_DO_Requirements", "type": "dataobject", "name": "Received Requirements from Owner" },
+          { "id": "Arch_Task_DevelopPlan", "type": "userTask", "name": "Develop/Update Plan" },
+          { "id": "Arch_DO_Plan", "type": "dataobject", "name": "Architect's Plan Document" },
+          { "id": "Arch_Task_SendPlan", "type": "sendTask", "name": "Send Plan to Owner" },
+          { "id": "Arch_Event_ReceiveFeedback", "type": "intermediateCatchEvent", "name": "Receive Feedback/Revisions", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Arch_DO_Feedback", "type": "dataobject", "name": "Feedback/Revisions Data from Owner" },
+          { "id": "Arch_Gate_FeedbackType", "type": "exclusiveGateway", "name": "Feedback Type?" },
+          { "id": "Arch_End_WorkComplete", "type": "endEvent", "name": "Architect Work Complete" }
+        ],
+        "flows": [
+          { "id": "Flow_Arch_1_StartToTask", "source": "Arch_Start_ReceiveReq", "target": "Arch_Task_DevelopPlan", "type": "sequenceFlow" },
+          { "id": "Flow_Arch_DIA_ReqToPlanDev", "source": "Arch_DO_Requirements", "target": "Arch_Task_DevelopPlan", "type": "dataInputAssociation" },
+          { "id": "Flow_Arch_DOA_PlanFromDev", "source": "Arch_Task_DevelopPlan", "target": "Arch_DO_Plan", "type": "dataOutputAssociation" },
+          { "id": "Flow_Arch_2_DevToSnd", "source": "Arch_Task_DevelopPlan", "target": "Arch_Task_SendPlan", "type": "sequenceFlow" },
+          { "id": "Flow_Arch_DIA_PlanToSend", "source": "Arch_DO_Plan", "target": "Arch_Task_SendPlan", "type": "dataInputAssociation" },
+          { "id": "Flow_Arch_3_SndToWaitFeedback", "source": "Arch_Task_SendPlan", "target": "Arch_Event_ReceiveFeedback", "type": "sequenceFlow" },
+          { "id": "Flow_Arch_4_FeedbackToGate", "source": "Arch_Event_ReceiveFeedback", "target": "Arch_Gate_FeedbackType", "type": "sequenceFlow" },
+          { "id": "Flow_Arch_DIA_FeedbackToPlanDev", "source": "Arch_DO_Feedback", "target": "Arch_Task_DevelopPlan", "type": "dataInputAssociation" },
+          { "id": "Flow_Arch_DIA_ExistingPlanToUpdate", "source": "Arch_DO_Plan", "target": "Arch_Task_DevelopPlan", "type": "dataInputAssociation" },
+          { "id": "Flow_Arch_5_RevisionsLoop", "source": "Arch_Gate_FeedbackType", "target": "Arch_Task_DevelopPlan", "type": "sequenceFlow", "name": "Revisions Received" },
+          { "id": "Flow_Arch_6_Final", "source": "Arch_Gate_FeedbackType", "target": "Arch_End_WorkComplete", "type": "sequenceFlow", "name": "Final Approval Received", "isDefault": true },
+          
+          { "id": "MsgFlow_Arch_DraftToOwner", "source": "Arch_Task_SendPlan", "target": "Owner_Event_ReceiveDraft", "type": "messageFlow", "name": "Draft Plan" },
+          { "id": "MsgFlow_Arch_UpdateToOwner", "source": "Arch_Task_SendPlan", "target": "Owner_Event_ReceiveUpdatedPlan", "type": "messageFlow", "name": "Updated Plan" }
+        ]
+      },
+      {
+        "id": "Pool_OnlineStores",
+        "name": "Online Stores",
+        "nodes": [
+          { "id": "Store_Start_ReceiveOrder", "type": "startEvent", "name": "Receive Material Order", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Store_DO_OrderDetails", "type": "dataobject", "name": "Order Details from Owner" },
+          { "id": "Store_Task_ProcessOrder", "type": "serviceTask", "name": "Process Material Order" },
+          { "id": "Store_End_OrderProcessed", "type": "endEvent", "name": "Order Processed" }
+        ],
+        "flows": [
+          { "id": "Flow_Store_1_StartToProcess", "source": "Store_Start_ReceiveOrder", "target": "Store_Task_ProcessOrder", "type": "sequenceFlow" },
+          { "id": "Flow_Store_DIA_OrderToProcess", "source": "Store_DO_OrderDetails", "target": "Store_Task_ProcessOrder", "type": "dataInputAssociation" },
+          { "id": "Flow_Store_2_ProcessToEnd", "source": "Store_Task_ProcessOrder", "target": "Store_End_OrderProcessed", "type": "sequenceFlow" }
+        ]
+      },
+      {
+        "id": "Pool_Friends",
+        "name": "Friends",
+        "nodes": [
+          { "id": "Friends_Start_ReceiveBuildReq", "type": "startEvent", "name": "Receive Build Request", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Friends_Task_BuildTreeHouse", "type": "userTask", "name": "Build Tree House" },
+          { "id": "Friends_Task_NotifyHouseBuilt", "type": "sendTask", "name": "Notify House Built" },
+          { "id": "Friends_Event_ReceivePartyInvite", "type": "intermediateCatchEvent", "name": "Receive Party Invitation", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Friends_Task_RSVP", "type": "userTask", "name": "Decide on Party Attendance (RSVP)" },
+          { "id": "Friends_Task_SendRSVP", "type": "sendTask", "name": "Send Party RSVP" },
+          { "id": "Friends_End_Involvement", "type": "endEvent", "name": "Friend's Involvement Ended" }
+        ],
+        "flows": [
+          { "id": "Flow_Friends_1_ReqToBuild", "source": "Friends_Start_ReceiveBuildReq", "target": "Friends_Task_BuildTreeHouse", "type": "sequenceFlow" },
+          { "id": "Flow_Friends_2_BuildToNotify", "source": "Friends_Task_BuildTreeHouse", "target": "Friends_Task_NotifyHouseBuilt", "type": "sequenceFlow" },
+          { "id": "Flow_Friends_3_NotifyToInviteWait", "source": "Friends_Task_NotifyHouseBuilt", "target": "Friends_Event_ReceivePartyInvite", "type": "sequenceFlow" },
+          { "id": "Flow_Friends_4_InviteToRSVP", "source": "Friends_Event_ReceivePartyInvite", "target": "Friends_Task_RSVP", "type": "sequenceFlow" },
+          { "id": "Flow_Friends_5_RSVPToSnd", "source": "Friends_Task_RSVP", "target": "Friends_Task_SendRSVP", "type": "sequenceFlow" },
+          { "id": "Flow_Friends_6_SndToEnd", "source": "Friends_Task_SendRSVP", "target": "Friends_End_Involvement", "type": "sequenceFlow" },
+  
+          { "id": "MsgFlow_Friends_BuiltToOwner", "source": "Friends_Task_NotifyHouseBuilt", "target": "Owner_Event_ReceiveHouseBuilt", "type": "messageFlow", "name": "House Built Notification" },
+          { "id": "MsgFlow_Friends_RSVPToOwner", "source": "Friends_Task_SendRSVP", "target": "Owner_Task_CollectPartyRSVPs", "type": "messageFlow", "name": "Party RSVP" }
+        ]
+      }
+    ]
+  }

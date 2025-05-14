@@ -1,0 +1,88 @@
+{
+    "pools": [
+      {
+        "id": "User_Pool",
+        "name": "User",
+        "nodes": [
+          { "id": "Start_1", "type": "startEvent", "name": "Start" },
+          { "id": "Task_Collect", "type": "task", "name": "Collect Requirements" },
+          { "id": "Send_Architect", "type": "sendTask", "name": "Send Requirements" },
+          { "id": "Receive_Draft", "type": "receiveTask", "name": "Receive Draft" },
+          { "id": "Excl_Refine", "type": "exclusiveGateway", "name": "Refine Needed?" },
+          { "id": "Task_Refine", "type": "task", "name": "Refine Requirements" },
+          { "id": "Send_Refined", "type": "sendTask", "name": "Send Refined" },
+          { "id": "Task_Materials", "type": "task", "name": "Create Materials List" },
+          { "id": "Para_Split", "type": "parallelGateway" },
+          { "id": "Task_Order", "type": "task", "name": "Order Materials" },
+          { "id": "Send_Friends", "type": "sendTask", "name": "Notify Friends" },
+          { "id": "Para_Join", "type": "parallelGateway" },
+          { "id": "Catch_Built", "type": "intermediateCatchEvent", "name": "House Built", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_Invite", "type": "sendTask", "name": "Send Invitations" },
+          { "id": "Data_Attendees", "type": "dataobject", "name": "Attendee List" },
+          { "id": "Task_Snacks", "type": "task", "name": "Buy Snacks" },
+          { "id": "End_1", "type": "endEvent", "name": "End" }
+        ],
+        "flows": [
+          { "id": "Seq_Start_Collect", "source": "Start_1", "target": "Task_Collect", "type": "sequenceFlow" },
+          { "id": "Seq_Collect_Send", "source": "Task_Collect", "target": "Send_Architect", "type": "sequenceFlow" },
+          { "id": "Seq_Send_Receive", "source": "Send_Architect", "target": "Receive_Draft", "type": "sequenceFlow" },
+          { "id": "Seq_Receive_Excl", "source": "Receive_Draft", "target": "Excl_Refine", "type": "sequenceFlow" },
+          { "id": "Seq_Excl_Refine", "source": "Excl_Refine", "target": "Task_Refine", "type": "sequenceFlow", "condition": "Yes", "name": "Yes" },
+          { "id": "Seq_Excl_Materials", "source": "Excl_Refine", "target": "Task_Materials", "type": "sequenceFlow", "isDefault": true },
+          { "id": "Seq_Refine_Send", "source": "Task_Refine", "target": "Send_Refined", "type": "sequenceFlow" },
+          { "id": "Seq_Send_Receive", "source": "Send_Refined", "target": "Receive_Draft", "type": "sequenceFlow" },
+          { "id": "Seq_Materials_Split", "source": "Task_Materials", "target": "Para_Split", "type": "sequenceFlow" },
+          { "id": "Seq_Split_Order", "source": "Para_Split", "target": "Task_Order", "type": "sequenceFlow" },
+          { "id": "Seq_Split_Friends", "source": "Para_Split", "target": "Send_Friends", "type": "sequenceFlow" },
+          { "id": "Seq_Order_Join", "source": "Task_Order", "target": "Para_Join", "type": "sequenceFlow" },
+          { "id": "Seq_Friends_Join", "source": "Send_Friends", "target": "Para_Join", "type": "sequenceFlow" },
+          { "id": "Seq_Join_Built", "source": "Para_Join", "target": "Catch_Built", "type": "sequenceFlow" },
+          { "id": "Seq_Built_Invite", "source": "Catch_Built", "target": "Task_Invite", "type": "sequenceFlow" },
+          { "id": "Seq_Invite_Snacks", "source": "Task_Invite", "target": "Task_Snacks", "type": "sequenceFlow" },
+          { "id": "DOA_Invite_Data", "source": "Task_Invite", "target": "Data_Attendees", "type": "dataOutputAssociation" },
+          { "id": "DIA_Data_Snacks", "source": "Data_Attendees", "target": "Task_Snacks", "type": "dataInputAssociation" },
+          { "id": "Seq_Snacks_End", "source": "Task_Snacks", "target": "End_1", "type": "sequenceFlow" },
+          { "id": "Msg_Send_Architect", "source": "Send_Architect", "target": "Start_Architect", "type": "messageFlow" },
+          { "id": "Msg_Send_Refined", "source": "Send_Refined", "target": "Catch_Refined", "type": "messageFlow" },
+          { "id": "Msg_Send_Friends", "source": "Send_Friends", "target": "Start_Build", "type": "messageFlow" },
+          { "id": "Msg_Send_Invite", "source": "Task_Invite", "target": "Start_Invite", "type": "messageFlow" }
+        ]
+      },
+      {
+        "id": "Architect_Pool",
+        "name": "Architect",
+        "nodes": [
+          { "id": "Start_Architect", "type": "startEvent", "name": "Receive Requirements", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_Create", "type": "task", "name": "Create Draft" },
+          { "id": "Send_Draft", "type": "sendTask", "name": "Send Draft" },
+          { "id": "Catch_Refined", "type": "intermediateCatchEvent", "name": "Receive Refined", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_Update", "type": "task", "name": "Update Draft" },
+          { "id": "Send_Updated", "type": "sendTask", "name": "Send Updated Draft" }
+        ],
+        "flows": [
+          { "id": "Seq_Start_Create", "source": "Start_Architect", "target": "Task_Create", "type": "sequenceFlow" },
+          { "id": "Seq_Create_Send", "source": "Task_Create", "target": "Send_Draft", "type": "sequenceFlow" },
+          { "id": "Seq_Send_Catch", "source": "Send_Draft", "target": "Catch_Refined", "type": "sequenceFlow" },
+          { "id": "Seq_Catch_Update", "source": "Catch_Refined", "target": "Task_Update", "type": "sequenceFlow" },
+          { "id": "Seq_Update_Send", "source": "Task_Update", "target": "Send_Updated", "type": "sequenceFlow" },
+          { "id": "Msg_Send_Draft", "source": "Send_Draft", "target": "Receive_Draft", "type": "messageFlow" },
+          { "id": "Msg_Send_Updated", "source": "Send_Updated", "target": "Receive_Draft", "type": "messageFlow" }
+        ]
+      },
+      {
+        "id": "Friends_Pool",
+        "name": "Friends",
+        "nodes": [
+          { "id": "Start_Build", "type": "startEvent", "name": "Build Request", "eventDefinitionType": "MessageEventDefinition" },
+          { "id": "Task_Build", "type": "task", "name": "Build House" },
+          { "id": "Send_Built", "type": "sendTask", "name": "Notify Built" },
+          { "id": "Start_Invite", "type": "startEvent", "name": "Invitation Received", "eventDefinitionType": "MessageEventDefinition" }
+        ],
+        "flows": [
+          { "id": "Seq_Start_Build", "source": "Start_Build", "target": "Task_Build", "type": "sequenceFlow" },
+          { "id": "Seq_Build_Send", "source": "Task_Build", "target": "Send_Built", "type": "sequenceFlow" },
+          { "id": "Msg_Send_Built", "source": "Send_Built", "target": "Catch_Built", "type": "messageFlow" }
+        ]
+      }
+    ]
+  }
