@@ -1,0 +1,145 @@
+{
+  "pools": [
+    {
+      "id": "Pool_User",
+      "name": "User (Tree House Builder)",
+      "nodes": [
+        { "id": "User_Start_BuildTreeHouse", "type": "startEvent", "name": "Start Building Tree House" },
+        { "id": "User_Task_CollectRequirements", "type": "userTask", "name": "Collect Requirements" },
+        { "id": "DO_UserRequirements", "type": "dataobject", "name": "User Requirements" },
+        { "id": "User_SendTask_SendReqToArchitect", "type": "sendTask", "name": "Send Requirements to Architect" },
+        { "id": "User_ReceiveTask_ReceiveDraftPlan", "type": "receiveTask", "name": "Receive Draft Plan from Architect" },
+        { "id": "DO_DraftPlan", "type": "dataobject", "name": "Draft Plan" },
+        { "id": "User_Gateway_RefinementLoop", "type": "exclusiveGateway", "name": "Refinements Done?" },
+        { "id": "User_UserTask_RefinePlan", "type": "userTask", "name": "Refine Plan with Additional Requirements" },
+        { "id": "DO_AdditionalRequirements", "type": "dataobject", "name": "Additional Requirements" },
+        { "id": "DO_UserUpdatedPlan", "type": "dataobject", "name": "User Updated Plan" },
+        { "id": "User_SendTask_SendRefinementsToArchitect", "type": "sendTask", "name": "Send Refinements to Architect" },
+        { "id": "User_ReceiveTask_ReceiveUpdatedDraft", "type": "receiveTask", "name": "Receive Updated Draft from Architect" },
+        { "id": "User_UserTask_CreateMaterialList", "type": "userTask", "name": "Create Material List from Plan" },
+        { "id": "DO_MaterialList", "type": "dataobject", "name": "Material List" },
+        { "id": "User_SendTask_OrderMaterials", "type": "sendTask", "name": "Order Materials from Online Stores" },
+        { "id": "User_SendTask_ContactFriendsForBuild", "type": "sendTask", "name": "Send Messages to Friends to Build House" },
+        { "id": "User_ReceiveTask_ReceiveHouseBuiltNotification", "type": "receiveTask", "name": "Receive House Built Notification" },
+        { "id": "User_SendTask_SendPartyInvitations", "type": "sendTask", "name": "Send Party Invitations to Friends" },
+        { "id": "User_ReceiveTask_ReceiveRSVPs", "type": "receiveTask", "name": "Receive RSVPs from Friends" },
+        { "id": "DO_RSVP_List", "type": "dataobject", "name": "RSVP List" },
+        { "id": "User_UserTask_CreateAttendeeList", "type": "userTask", "name": "Create Attendee List for Party Snacks" },
+        { "id": "DO_AttendeeList", "type": "dataobject", "name": "Attendee List" },
+        { "id": "User_EndEvent_ProcessComplete", "type": "endEvent", "name": "Tree House Process Completed" }
+      ],
+      "flows": [
+        { "id": "SF_User_Start_To_CollectReq", "source": "User_Start_BuildTreeHouse", "target": "User_Task_CollectRequirements", "type": "sequenceFlow" },
+        { "id": "DOA_CollectReq_To_UserReqDoc", "source": "User_Task_CollectRequirements", "target": "DO_UserRequirements", "type": "dataOutputAssociation" },
+        { "id": "DIA_UserReqDoc_To_SendReq", "source": "DO_UserRequirements", "target": "User_SendTask_SendReqToArchitect", "type": "dataInputAssociation" },
+        { "id": "SF_User_CollectReq_To_SendReq", "source": "User_Task_CollectRequirements", "target": "User_SendTask_SendReqToArchitect", "type": "sequenceFlow" },
+        { "id": "SF_User_SendReq_To_ReceiveDraft", "source": "User_SendTask_SendReqToArchitect", "target": "User_ReceiveTask_ReceiveDraftPlan", "type": "sequenceFlow" },
+        { "id": "DOA_ReceiveDraft_To_DraftPlanDoc", "source": "User_ReceiveTask_ReceiveDraftPlan", "target": "DO_DraftPlan", "type": "dataOutputAssociation" },
+        { "id": "SF_User_ReceiveDraft_To_Gateway", "source": "User_ReceiveTask_ReceiveDraftPlan", "target": "User_Gateway_RefinementLoop", "type": "sequenceFlow" },
+        { "id": "SF_User_Gateway_To_RefinePlan", "source": "User_Gateway_RefinementLoop", "target": "User_UserTask_RefinePlan", "type": "sequenceFlow", "condition": "Refinements Needed" },
+        { "id": "DIA_DraftPlanDoc_To_RefinePlan", "source": "DO_DraftPlan", "target": "User_UserTask_RefinePlan", "type": "dataInputAssociation" },
+        { "id": "DOA_RefinePlan_To_AddReqDoc", "source": "User_UserTask_RefinePlan", "target": "DO_AdditionalRequirements", "type": "dataOutputAssociation" },
+        { "id": "DOA_RefinePlan_To_UpdatedPlanDoc", "source": "User_UserTask_RefinePlan", "target": "DO_UserUpdatedPlan", "type": "dataOutputAssociation" },
+        { "id": "SF_User_RefinePlan_To_SendRefinements", "source": "User_UserTask_RefinePlan", "target": "User_SendTask_SendRefinementsToArchitect", "type": "sequenceFlow" },
+        { "id": "DIA_AddReqDoc_To_SendRefinements", "source": "DO_AdditionalRequirements", "target": "User_SendTask_SendRefinementsToArchitect", "type": "dataInputAssociation" },
+        { "id": "DIA_UpdatedPlanDoc_To_SendRefinements", "source": "DO_UserUpdatedPlan", "target": "User_SendTask_SendRefinementsToArchitect", "type": "dataInputAssociation" },
+        { "id": "SF_User_SendRefinements_To_ReceiveUpdated", "source": "User_SendTask_SendRefinementsToArchitect", "target": "User_ReceiveTask_ReceiveUpdatedDraft", "type": "sequenceFlow" },
+        { "id": "DOA_ReceiveUpdated_To_DraftPlanDoc", "source": "User_ReceiveTask_ReceiveUpdatedDraft", "target": "DO_DraftPlan", "type": "dataOutputAssociation" },
+        { "id": "SF_User_ReceiveUpdated_To_Gateway", "source": "User_ReceiveTask_ReceiveUpdatedDraft", "target": "User_Gateway_RefinementLoop", "type": "sequenceFlow" },
+        { "id": "SF_User_Gateway_To_CreateMaterialList", "source": "User_Gateway_RefinementLoop", "target": "User_UserTask_CreateMaterialList", "type": "sequenceFlow", "condition": "No More Refinements", "isDefault": true },
+        { "id": "DIA_FinalPlanDoc_To_CreateMaterialList", "source": "DO_DraftPlan", "target": "User_UserTask_CreateMaterialList", "type": "dataInputAssociation" },
+        { "id": "DOA_CreateMaterialList_To_MaterialListDoc", "source": "User_UserTask_CreateMaterialList", "target": "DO_MaterialList", "type": "dataOutputAssociation" },
+        { "id": "SF_User_CreateMaterialList_To_OrderMaterials", "source": "User_UserTask_CreateMaterialList", "target": "User_SendTask_OrderMaterials", "type": "sequenceFlow" },
+        { "id": "DIA_MaterialListDoc_To_OrderMaterials", "source": "DO_MaterialList", "target": "User_SendTask_OrderMaterials", "type": "dataInputAssociation" },
+        { "id": "SF_User_OrderMaterials_To_ContactFriendsBuild", "source": "User_SendTask_OrderMaterials", "target": "User_SendTask_ContactFriendsForBuild", "type": "sequenceFlow" },
+        { "id": "SF_User_ContactFriendsBuild_To_ReceiveHouseBuilt", "source": "User_SendTask_ContactFriendsForBuild", "target": "User_ReceiveTask_ReceiveHouseBuiltNotification", "type": "sequenceFlow" },
+        { "id": "SF_User_ReceiveHouseBuilt_To_SendPartyInvites", "source": "User_ReceiveTask_ReceiveHouseBuiltNotification", "target": "User_SendTask_SendPartyInvitations", "type": "sequenceFlow" },
+        { "id": "SF_User_SendPartyInvites_To_ReceiveRSVPs", "source": "User_SendTask_SendPartyInvitations", "target": "User_ReceiveTask_ReceiveRSVPs", "type": "sequenceFlow" },
+        { "id": "DOA_ReceiveRSVPs_To_RSVPListDoc", "source": "User_ReceiveTask_ReceiveRSVPs", "target": "DO_RSVP_List", "type": "dataOutputAssociation" },
+        { "id": "SF_User_ReceiveRSVPs_To_CreateAttendeeList", "source": "User_ReceiveTask_ReceiveRSVPs", "target": "User_UserTask_CreateAttendeeList", "type": "sequenceFlow" },
+        { "id": "DIA_RSVPListDoc_To_CreateAttendeeList", "source": "DO_RSVP_List", "target": "User_UserTask_CreateAttendeeList", "type": "dataInputAssociation" },
+        { "id": "DOA_CreateAttendeeList_To_AttendeeListDoc", "source": "User_UserTask_CreateAttendeeList", "target": "DO_AttendeeList", "type": "dataOutputAssociation" },
+        { "id": "SF_User_CreateAttendeeList_ToEnd", "source": "User_UserTask_CreateAttendeeList", "target": "User_EndEvent_ProcessComplete", "type": "sequenceFlow" },
+        
+        { "id": "MF_UserReqToArchitect", "source": "User_SendTask_SendReqToArchitect", "target": "Architect_ReceiveTask_ReceiveRequirements", "type": "messageFlow", "name": "User Requirements" },
+        { "id": "MF_UserRefinementsToArchitect", "source": "User_SendTask_SendRefinementsToArchitect", "target": "Architect_ReceiveTask_ReceiveRefinements", "type": "messageFlow", "name": "Refinements/Updated Plan" },
+        { "id": "MF_UserOrderToStores", "source": "User_SendTask_OrderMaterials", "target": "Stores_StartEvent_OrderReceived", "type": "messageFlow", "name": "Material Order" },
+        { "id": "MF_UserBuildReqToFriends", "source": "User_SendTask_ContactFriendsForBuild", "target": "Friends_StartEvent_BuildRequestReceived", "type": "messageFlow", "name": "Build Request" },
+        { "id": "MF_UserPartyInviteToFriends", "source": "User_SendTask_SendPartyInvitations", "target": "Friends_StartEvent_PartyInviteReceived", "type": "messageFlow", "name": "Party Invitation" }
+      ]
+    },
+    {
+      "id": "Pool_Architect",
+      "name": "Tree House Architect",
+      "nodes": [
+        { "id": "Architect_ReceiveTask_ReceiveRequirements", "type": "receiveTask", "name": "Receive Requirements from User" },
+        { "id": "DO_Arc_Requirements", "type": "dataobject", "name": "Architect Received Requirements" },
+        { "id": "Architect_UserTask_CreateDraftPlan", "type": "userTask", "name": "Create Draft Plan" },
+        { "id": "DO_Arc_DraftPlan", "type": "dataobject", "name": "Architect Draft Plan" },
+        { "id": "Architect_SendTask_SendDraftPlan", "type": "sendTask", "name": "Send Draft Plan to User" },
+        { "id": "Architect_ReceiveTask_ReceiveRefinements", "type": "receiveTask", "name": "Receive Refinements from User" },
+        { "id": "DO_Arc_RefinedInfo", "type": "dataobject", "name": "Architect Received Refinements" },
+        { "id": "Architect_UserTask_UpdatePlan", "type": "userTask", "name": "Update Plan based on Refinements" },
+        { "id": "DO_Arc_UpdatedDraftPlan", "type": "dataobject", "name": "Architect Updated Draft Plan" },
+        { "id": "Architect_SendTask_SendUpdatedDraft", "type": "sendTask", "name": "Send Updated Draft to User" }
+      ],
+      "flows": [
+        { "id": "DOA_Arc_ReceiveReq_To_ArcReqDoc", "source": "Architect_ReceiveTask_ReceiveRequirements", "target": "DO_Arc_Requirements", "type": "dataOutputAssociation"},
+        { "id": "SF_Arc_ReceiveReq_To_CreateDraft", "source": "Architect_ReceiveTask_ReceiveRequirements", "target": "Architect_UserTask_CreateDraftPlan", "type": "sequenceFlow" },
+        { "id": "DIA_ArcReqDoc_To_CreateDraft", "source": "DO_Arc_Requirements", "target": "Architect_UserTask_CreateDraftPlan", "type": "dataInputAssociation"},
+        { "id": "DOA_Arc_CreateDraft_To_ArcDraftDoc", "source": "Architect_UserTask_CreateDraftPlan", "target": "DO_Arc_DraftPlan", "type": "dataOutputAssociation"},
+        { "id": "SF_Arc_CreateDraft_To_SendDraft", "source": "Architect_UserTask_CreateDraftPlan", "target": "Architect_SendTask_SendDraftPlan", "type": "sequenceFlow" },
+        { "id": "DIA_ArcDraftDoc_To_SendDraft", "source": "DO_Arc_DraftPlan", "target": "Architect_SendTask_SendDraftPlan", "type": "dataInputAssociation"},
+        { "id": "SF_Arc_SendDraft_To_ReceiveRefinement", "source": "Architect_SendTask_SendDraftPlan", "target": "Architect_ReceiveTask_ReceiveRefinements", "type": "sequenceFlow" },
+        { "id": "DOA_Arc_ReceiveRef_To_ArcRefDoc", "source": "Architect_ReceiveTask_ReceiveRefinements", "target": "DO_Arc_RefinedInfo", "type": "dataOutputAssociation"},
+        { "id": "SF_Arc_ReceiveRefinement_To_UpdatePlan", "source": "Architect_ReceiveTask_ReceiveRefinements", "target": "Architect_UserTask_UpdatePlan", "type": "sequenceFlow" },
+        { "id": "DIA_ArcRefDoc_To_UpdatePlan", "source": "DO_Arc_RefinedInfo", "target": "Architect_UserTask_UpdatePlan", "type": "dataInputAssociation"},
+        { "id": "DOA_Arc_UpdatePlan_To_ArcUpdatedDraft", "source": "Architect_UserTask_UpdatePlan", "target": "DO_Arc_UpdatedDraftPlan", "type": "dataOutputAssociation"},
+        { "id": "SF_Arc_UpdatePlan_To_SendUpdate", "source": "Architect_UserTask_UpdatePlan", "target": "Architect_SendTask_SendUpdatedDraft", "type": "sequenceFlow" },
+        { "id": "DIA_ArcUpdatedDraft_To_SendUpdate", "source": "DO_Arc_UpdatedDraftPlan", "target": "Architect_SendTask_SendUpdatedDraft", "type": "dataInputAssociation"},
+        { "id": "SF_Arc_SendUpdate_To_ReceiveRefinementLoop", "source": "Architect_SendTask_SendUpdatedDraft", "target": "Architect_ReceiveTask_ReceiveRefinements", "type": "sequenceFlow" },
+        
+        { "id": "MF_ArchitectDraftToUser", "source": "Architect_SendTask_SendDraftPlan", "target": "User_ReceiveTask_ReceiveDraftPlan", "type": "messageFlow", "name": "Architect Draft Plan" },
+        { "id": "MF_ArchitectUpdateToUser", "source": "Architect_SendTask_SendUpdatedDraft", "target": "User_ReceiveTask_ReceiveUpdatedDraft", "type": "messageFlow", "name": "Architect Updated Draft" }
+      ]
+    },
+    {
+      "id": "Pool_Stores",
+      "name": "Online Stores",
+      "nodes": [
+        { "id": "Stores_StartEvent_OrderReceived", "type": "startEvent", "name": "Material Order Received", "eventDefinitionType": "MessageEventDefinition" },
+        { "id": "Stores_ServiceTask_ProcessOrder", "type": "serviceTask", "name": "Process Material Order" },
+        { "id": "Stores_EndEvent_OrderProcessed", "type": "endEvent", "name": "Order Processed and Shipped" }
+      ],
+      "flows": [
+        { "id": "SF_Stores_Start_To_ProcessOrder", "source": "Stores_StartEvent_OrderReceived", "target": "Stores_ServiceTask_ProcessOrder", "type": "sequenceFlow" },
+        { "id": "SF_Stores_ProcessOrder_ToEnd", "source": "Stores_ServiceTask_ProcessOrder", "target": "Stores_EndEvent_OrderProcessed", "type": "sequenceFlow" }
+      ]
+    },
+    {
+      "id": "Pool_Friends",
+      "name": "Friends",
+      "nodes": [
+        { "id": "Friends_StartEvent_BuildRequestReceived", "type": "startEvent", "name": "Build Request Received", "eventDefinitionType": "MessageEventDefinition" },
+        { "id": "Friends_UserTask_BuildTreeHouse", "type": "userTask", "name": "Build Tree House" },
+        { "id": "Friends_SendTask_NotifyHouseBuilt", "type": "sendTask", "name": "Notify User House is Built" },
+        { "id": "Friends_EndEvent_BuildNotificationSent", "type": "endEvent", "name": "Build Notification Sent" },
+        { "id": "Friends_StartEvent_PartyInviteReceived", "type": "startEvent", "name": "Party Invitation Received", "eventDefinitionType": "MessageEventDefinition" },
+        { "id": "Friends_UserTask_DecideAttendanceAndRSVP", "type": "userTask", "name": "Decide Attendance and RSVP" },
+        { "id": "Friends_SendTask_SendRSVP", "type": "sendTask", "name": "Send RSVP to User" },
+        { "id": "Friends_EndEvent_RSVPSent", "type": "endEvent", "name": "RSVP Sent" }
+      ],
+      "flows": [
+        { "id": "SF_Friends_BuildReq_To_BuildHouse", "source": "Friends_StartEvent_BuildRequestReceived", "target": "Friends_UserTask_BuildTreeHouse", "type": "sequenceFlow" },
+        { "id": "SF_Friends_BuildHouse_To_NotifyBuilt", "source": "Friends_UserTask_BuildTreeHouse", "target": "Friends_SendTask_NotifyHouseBuilt", "type": "sequenceFlow" },
+        { "id": "SF_Friends_NotifyBuilt_ToEnd", "source": "Friends_SendTask_NotifyHouseBuilt", "target": "Friends_EndEvent_BuildNotificationSent", "type": "sequenceFlow" },
+        { "id": "SF_Friends_PartyInvite_To_DecideRSVP", "source": "Friends_StartEvent_PartyInviteReceived", "target": "Friends_UserTask_DecideAttendanceAndRSVP", "type": "sequenceFlow" },
+        { "id": "SF_Friends_DecideRSVP_To_SendRSVP", "source": "Friends_UserTask_DecideAttendanceAndRSVP", "target": "Friends_SendTask_SendRSVP", "type": "sequenceFlow" },
+        { "id": "SF_Friends_SendRSVP_ToEnd", "source": "Friends_SendTask_SendRSVP", "target": "Friends_EndEvent_RSVPSent", "type": "sequenceFlow" },
+
+        { "id": "MF_FriendsBuildNotificationToUser", "source": "Friends_SendTask_NotifyHouseBuilt", "target": "User_ReceiveTask_ReceiveHouseBuiltNotification", "type": "messageFlow", "name": "House Built Notification" },
+        { "id": "MF_FriendsRSVPToUser", "source": "Friends_SendTask_SendRSVP", "target": "User_ReceiveTask_ReceiveRSVPs", "type": "messageFlow", "name": "Party RSVP" }
+      ]
+    }
+  ]
+}

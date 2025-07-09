@@ -1,0 +1,278 @@
+{
+ "id": "TreeHouseBuildingProcess",
+ "name": "Tree House Building Process",
+ "nodes": [
+   {
+     "id": "StartEvent_ProjectStarted",
+     "type": "startEvent",
+     "name": "Tree House Project Started"
+   },
+   {
+     "id": "Task_CollectRequirements",
+     "type": "task",
+     "name": "Collect Requirements"
+   },
+   {
+     "id": "DataObject_RequirementsList",
+     "type": "dataobject",
+     "name": "Requirements List | string_array | data.requirements = ['sturdy foundation', 'weatherproof roof', 'rope ladder']"
+   },
+   {
+     "id": "Task_SendRequirements",
+     "type": "task",
+     "name": "Send Requirements to Architect"
+   },
+   {
+     "id": "Gateway_AwaitInput",
+     "type": "exclusiveGateway",
+     "name": "Await Architect Input"
+   },
+   {
+     "id": "Task_ArchitectSendsDraft",
+     "type": "task",
+     "name": "Architect Sends Draft"
+   },
+   {
+     "id": "DataObject_ArchitectDraft",
+     "type": "dataobject",
+     "name": "Architect Draft | string | data.architect_draft = 'Initial blueprint with dimensions and support points.'"
+   },
+   {
+     "id": "Task_ReviewAndRefineDraft",
+     "type": "task",
+     "name": "Review and Refine Draft"
+   },
+   {
+     "id": "DataObject_RefinementDecision",
+     "type": "dataobject",
+     "name": "Refinement Decision | boolean | data.refinement_decision = [true, false].sample"
+   },
+   {
+     "id": "Gateway_RefinementsNeeded",
+     "type": "exclusiveGateway",
+     "name": "Refinements Needed? | boolean | data.refinement_decision == true"
+   },
+   {
+     "id": "Task_CreateMaterialList",
+     "type": "task",
+     "name": "Create List of Needed Materials"
+   },
+   {
+     "id": "DataObject_MaterialList",
+     "type": "dataobject",
+     "name": "Material List | string_array | data.materials = ['20kg wood bars', 'roof tiles', 'nails', 'screws']"
+   },
+   {
+     "id": "Task_OrderMaterials",
+     "type": "task",
+     "name": "Order Materials"
+   },
+   {
+     "id": "Gateway_ParallelSplit",
+     "type": "parallelGateway"
+   },
+   {
+     "id": "Task_AwaitMaterialDelivery",
+     "type": "task",
+     "name": "Await Material Delivery"
+   },
+   {
+     "id": "Task_ContactFriends",
+     "type": "task",
+     "name": "Contact Friends for Building"
+   },
+   {
+     "id": "Gateway_ParallelJoin",
+     "type": "parallelGateway"
+   },
+   {
+     "id": "Task_SendPartyInvitations",
+     "type": "task",
+     "name": "Send Party Invitations"
+   },
+   {
+     "id": "Task_CreateAttendeeList",
+     "type": "task",
+     "name": "Create List of Party Attendees"
+   },
+   {
+     "id": "DataObject_AttendeeList",
+     "type": "dataobject",
+     "name": "Attendee List | string_array | data.attendees = ['Alice', 'Bob', 'Charlie']"
+   },
+   {
+     "id": "EndEvent_ProcessComplete",
+     "type": "endEvent",
+     "name": "Tree House and Party Ready"
+   }
+ ],
+ "flows": [
+   {
+     "id": "Flow_StartToCollect",
+     "source": "StartEvent_ProjectStarted",
+     "target": "Task_CollectRequirements",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "DOA_Collect_To_ReqList",
+     "source": "Task_CollectRequirements",
+     "target": "DataObject_RequirementsList",
+     "type": "dataOutputAssociation"
+   },
+   {
+     "id": "Flow_CollectToSend",
+     "source": "Task_CollectRequirements",
+     "target": "Task_SendRequirements",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "DIA_ReqList_To_Send",
+     "source": "DataObject_RequirementsList",
+     "target": "Task_SendRequirements",
+     "type": "dataInputAssociation"
+   },
+   {
+     "id": "Flow_SendToAwait",
+     "source": "Task_SendRequirements",
+     "target": "Gateway_AwaitInput",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "Flow_AwaitToDraft",
+     "source": "Gateway_AwaitInput",
+     "target": "Task_ArchitectSendsDraft",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "DOA_Architect_To_Draft",
+     "source": "Task_ArchitectSendsDraft",
+     "target": "DataObject_ArchitectDraft",
+     "type": "dataOutputAssociation"
+   },
+   {
+     "id": "Flow_DraftToReview",
+     "source": "Task_ArchitectSendsDraft",
+     "target": "Task_ReviewAndRefineDraft",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "DIA_Draft_To_Review",
+     "source": "DataObject_ArchitectDraft",
+     "target": "Task_ReviewAndRefineDraft",
+     "type": "dataInputAssociation"
+   },
+   {
+     "id": "DOA_Review_To_Decision",
+     "source": "Task_ReviewAndRefineDraft",
+     "target": "DataObject_RefinementDecision",
+     "type": "dataOutputAssociation"
+   },
+   {
+     "id": "DIA_Decision_To_Gateway",
+     "source": "DataObject_RefinementDecision",
+     "target": "Gateway_RefinementsNeeded",
+     "type": "dataInputAssociation"
+   },
+   {
+     "id": "Flow_ReviewToDecision",
+     "source": "Task_ReviewAndRefineDraft",
+     "target": "Gateway_RefinementsNeeded",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "Flow_DecisionToAwait_Yes",
+     "source": "Gateway_RefinementsNeeded",
+     "target": "Gateway_AwaitInput",
+     "type": "sequenceFlow",
+     "name": "Yes, Refinements Needed",
+     "condition": "Yes, Refinements Needed"
+   },
+   {
+     "id": "Flow_DecisionToList_No",
+     "source": "Gateway_RefinementsNeeded",
+     "target": "Task_CreateMaterialList",
+     "type": "sequenceFlow",
+     "name": "No, Draft Finalized",
+     "condition": "No, Draft Finalized",
+     "isDefault": true
+   },
+   {
+     "id": "DIA_Draft_To_CreateMaterialList",
+     "source": "DataObject_ArchitectDraft",
+     "target": "Task_CreateMaterialList",
+     "type": "dataInputAssociation"
+   },
+   {
+     "id": "DOA_CreateList_To_MaterialList",
+     "source": "Task_CreateMaterialList",
+     "target": "DataObject_MaterialList",
+     "type": "dataOutputAssociation"
+   },
+   {
+     "id": "Flow_ListToOrder",
+     "source": "Task_CreateMaterialList",
+     "target": "Task_OrderMaterials",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "DIA_MaterialList_To_Order",
+     "source": "DataObject_MaterialList",
+     "target": "Task_OrderMaterials",
+     "type": "dataInputAssociation"
+   },
+   {
+     "id": "Flow_OrderToSplit",
+     "source": "Task_OrderMaterials",
+     "target": "Gateway_ParallelSplit",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "Flow_SplitToAwait",
+     "source": "Gateway_ParallelSplit",
+     "target": "Task_AwaitMaterialDelivery",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "Flow_SplitToContact",
+     "source": "Gateway_ParallelSplit",
+     "target": "Task_ContactFriends",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "Flow_AwaitToJoin",
+     "source": "Task_AwaitMaterialDelivery",
+     "target": "Gateway_ParallelJoin",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "Flow_ContactToJoin",
+     "source": "Task_ContactFriends",
+     "target": "Gateway_ParallelJoin",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "Flow_JoinToInvite",
+     "source": "Gateway_ParallelJoin",
+     "target": "Task_SendPartyInvitations",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "Flow_InviteToList",
+     "source": "Task_SendPartyInvitations",
+     "target": "Task_CreateAttendeeList",
+     "type": "sequenceFlow"
+   },
+   {
+     "id": "DOA_CreateAttendeeList_To_List",
+     "source": "Task_CreateAttendeeList",
+     "target": "DataObject_AttendeeList",
+     "type": "dataOutputAssociation"
+   },
+   {
+     "id": "Flow_ListToEnd",
+     "source": "Task_CreateAttendeeList",
+     "target": "EndEvent_ProcessComplete",
+     "type": "sequenceFlow"
+   }
+ ]
+}

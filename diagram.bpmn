@@ -1,381 +1,294 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs_1" targetNamespace="http://example.com/bpmn">
   <bpmn:collaboration id="Collab_1">
-    <bpmn:participant id="Part_User_Pool" name="User" processRef="Proc_User_Pool" />
-    <bpmn:participant id="Part_Architect_Pool" name="Architect" processRef="Proc_Architect_Pool" />
-    <bpmn:participant id="Part_Friends_Pool" name="Friends" processRef="Proc_Friends_Pool" />
-    <bpmn:messageFlow id="Msg_Send_Architect" name="" sourceRef="Send_Architect" targetRef="Start_Architect" />
-    <bpmn:messageFlow id="Msg_Send_Refined" name="" sourceRef="Send_Refined" targetRef="Catch_Refined" />
-    <bpmn:messageFlow id="Msg_Send_Friends" name="" sourceRef="Send_Friends" targetRef="Start_Build" />
-    <bpmn:messageFlow id="Msg_Send_Invite" name="" sourceRef="Task_Invite" targetRef="Start_Invite" />
-    <bpmn:messageFlow id="Msg_Send_Draft" name="" sourceRef="Send_Draft" targetRef="Receive_Draft" />
-    <bpmn:messageFlow id="Msg_Send_Updated" name="" sourceRef="Send_Updated" targetRef="Receive_Draft" />
-    <bpmn:messageFlow id="Msg_Send_Built" name="" sourceRef="Send_Built" targetRef="Catch_Built" />
+    <bpmn:participant id="Part_TreeHouseBuildingProcess" name="Tree House Building Process" processRef="Proc_TreeHouseBuildingProcess" />
   </bpmn:collaboration>
-  <bpmn:process id="Proc_User_Pool" name="User" isExecutable="true">
-    <bpmn:startEvent id="Start_1" name="Start">
-      <bpmn:outgoing>Seq_Start_Collect</bpmn:outgoing>
+  <bpmn:process id="Proc_TreeHouseBuildingProcess" name="Tree House Building Process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_ProjectStarted" name="Tree House Project Started">
+      <bpmn:outgoing>Flow_StartToCollect</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:task id="Task_Collect" name="Collect Requirements">
-      <bpmn:incoming>Seq_Start_Collect</bpmn:incoming>
-      <bpmn:outgoing>Seq_Collect_Send</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:sendTask id="Send_Architect" name="Send Requirements">
-      <bpmn:incoming>Seq_Collect_Send</bpmn:incoming>
-      <bpmn:outgoing>Seq_Send_Receive</bpmn:outgoing>
-    </bpmn:sendTask>
-    <bpmn:receiveTask id="Receive_Draft" name="Receive Draft">
-      <bpmn:incoming>Seq_Send_Receive</bpmn:incoming>
-      <bpmn:incoming>Seq_Send_Receive</bpmn:incoming>
-      <bpmn:outgoing>Seq_Receive_Excl</bpmn:outgoing>
-    </bpmn:receiveTask>
-    <bpmn:exclusiveGateway id="Excl_Refine" name="Refine Needed?" default="Seq_Excl_Materials">
-      <bpmn:incoming>Seq_Receive_Excl</bpmn:incoming>
-      <bpmn:outgoing>Seq_Excl_Refine</bpmn:outgoing>
-      <bpmn:outgoing>Seq_Excl_Materials</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:task id="Task_Refine" name="Refine Requirements">
-      <bpmn:incoming>Seq_Excl_Refine</bpmn:incoming>
-      <bpmn:outgoing>Seq_Refine_Send</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:sendTask id="Send_Refined" name="Send Refined">
-      <bpmn:incoming>Seq_Refine_Send</bpmn:incoming>
-      <bpmn:outgoing>Seq_Send_Receive</bpmn:outgoing>
-    </bpmn:sendTask>
-    <bpmn:task id="Task_Materials" name="Create Materials List">
-      <bpmn:incoming>Seq_Excl_Materials</bpmn:incoming>
-      <bpmn:outgoing>Seq_Materials_Split</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:parallelGateway id="Para_Split">
-      <bpmn:incoming>Seq_Materials_Split</bpmn:incoming>
-      <bpmn:outgoing>Seq_Split_Order</bpmn:outgoing>
-      <bpmn:outgoing>Seq_Split_Friends</bpmn:outgoing>
-    </bpmn:parallelGateway>
-    <bpmn:task id="Task_Order" name="Order Materials">
-      <bpmn:incoming>Seq_Split_Order</bpmn:incoming>
-      <bpmn:outgoing>Seq_Order_Join</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:sendTask id="Send_Friends" name="Notify Friends">
-      <bpmn:incoming>Seq_Split_Friends</bpmn:incoming>
-      <bpmn:outgoing>Seq_Friends_Join</bpmn:outgoing>
-    </bpmn:sendTask>
-    <bpmn:parallelGateway id="Para_Join">
-      <bpmn:incoming>Seq_Order_Join</bpmn:incoming>
-      <bpmn:incoming>Seq_Friends_Join</bpmn:incoming>
-      <bpmn:outgoing>Seq_Join_Built</bpmn:outgoing>
-    </bpmn:parallelGateway>
-    <bpmn:intermediateCatchEvent id="Catch_Built" name="House Built">
-      <bpmn:incoming>Seq_Join_Built</bpmn:incoming>
-      <bpmn:outgoing>Seq_Built_Invite</bpmn:outgoing>
-      <bpmn:messageEventDefinition />
-    </bpmn:intermediateCatchEvent>
-    <bpmn:sendTask id="Task_Invite" name="Send Invitations">
-      <bpmn:incoming>Seq_Built_Invite</bpmn:incoming>
-      <bpmn:outgoing>Seq_Invite_Snacks</bpmn:outgoing>
-      <bpmn:dataOutputAssociation id="DOA_Invite_Data">
-        <bpmn:targetRef>Data_Attendees</bpmn:targetRef>
+    <bpmn:task id="Task_CollectRequirements" name="Collect Requirements">
+      <bpmn:incoming>Flow_StartToCollect</bpmn:incoming>
+      <bpmn:outgoing>Flow_CollectToSend</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DOA_Collect_To_ReqList">
+        <bpmn:targetRef>DataObject_RequirementsList</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
-    </bpmn:sendTask>
-    <bpmn:dataObjectReference id="Data_Attendees" name="Attendee List" />
-    <bpmn:task id="Task_Snacks" name="Buy Snacks">
-      <bpmn:incoming>Seq_Invite_Snacks</bpmn:incoming>
-      <bpmn:outgoing>Seq_Snacks_End</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:endEvent id="End_1" name="End">
-      <bpmn:incoming>Seq_Snacks_End</bpmn:incoming>
+    <bpmn:dataObjectReference id="DataObject_RequirementsList" name="Requirements List | string_array | data.requirements = [&#39;sturdy foundation&#39;, &#39;weatherproof roof&#39;, &#39;rope ladder&#39;]" />
+    <bpmn:task id="Task_SendRequirements" name="Send Requirements to Architect">
+      <bpmn:incoming>Flow_CollectToSend</bpmn:incoming>
+      <bpmn:outgoing>Flow_SendToAwait</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_AwaitInput" name="Await Architect Input">
+      <bpmn:incoming>Flow_SendToAwait</bpmn:incoming>
+      <bpmn:incoming>Flow_DecisionToAwait_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_AwaitToDraft</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_ArchitectSendsDraft" name="Architect Sends Draft">
+      <bpmn:incoming>Flow_AwaitToDraft</bpmn:incoming>
+      <bpmn:outgoing>Flow_DraftToReview</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DOA_Architect_To_Draft">
+        <bpmn:targetRef>DataObject_ArchitectDraft</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:dataObjectReference id="DataObject_ArchitectDraft" name="Architect Draft | string | data.architect_draft = &#39;Initial blueprint with dimensions and support points.&#39;" />
+    <bpmn:task id="Task_ReviewAndRefineDraft" name="Review and Refine Draft">
+      <bpmn:incoming>Flow_DraftToReview</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReviewToDecision</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DOA_Review_To_Decision">
+        <bpmn:targetRef>DataObject_RefinementDecision</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:dataObjectReference id="DataObject_RefinementDecision" name="Refinement Decision | boolean | data.refinement_decision = [true, false].sample" />
+    <bpmn:exclusiveGateway id="Gateway_RefinementsNeeded" name="Refinements Needed? | boolean | data.refinement_decision == true" default="Flow_DecisionToList_No">
+      <bpmn:incoming>Flow_ReviewToDecision</bpmn:incoming>
+      <bpmn:outgoing>Flow_DecisionToAwait_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_DecisionToList_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="Task_CreateMaterialList" name="Create List of Needed Materials">
+      <bpmn:incoming>Flow_DecisionToList_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_ListToOrder</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DOA_CreateList_To_MaterialList">
+        <bpmn:targetRef>DataObject_MaterialList</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:dataObjectReference id="DataObject_MaterialList" name="Material List | string_array | data.materials = [&#39;20kg wood bars&#39;, &#39;roof tiles&#39;, &#39;nails&#39;, &#39;screws&#39;]" />
+    <bpmn:task id="Task_OrderMaterials" name="Order Materials">
+      <bpmn:incoming>Flow_ListToOrder</bpmn:incoming>
+      <bpmn:outgoing>Flow_OrderToSplit</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:parallelGateway id="Gateway_ParallelSplit">
+      <bpmn:incoming>Flow_OrderToSplit</bpmn:incoming>
+      <bpmn:outgoing>Flow_SplitToAwait</bpmn:outgoing>
+      <bpmn:outgoing>Flow_SplitToContact</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:task id="Task_AwaitMaterialDelivery" name="Await Material Delivery">
+      <bpmn:incoming>Flow_SplitToAwait</bpmn:incoming>
+      <bpmn:outgoing>Flow_AwaitToJoin</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_ContactFriends" name="Contact Friends for Building">
+      <bpmn:incoming>Flow_SplitToContact</bpmn:incoming>
+      <bpmn:outgoing>Flow_ContactToJoin</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:parallelGateway id="Gateway_ParallelJoin">
+      <bpmn:incoming>Flow_AwaitToJoin</bpmn:incoming>
+      <bpmn:incoming>Flow_ContactToJoin</bpmn:incoming>
+      <bpmn:outgoing>Flow_JoinToInvite</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:task id="Task_SendPartyInvitations" name="Send Party Invitations">
+      <bpmn:incoming>Flow_JoinToInvite</bpmn:incoming>
+      <bpmn:outgoing>Flow_InviteToList</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_CreateAttendeeList" name="Create List of Party Attendees">
+      <bpmn:incoming>Flow_InviteToList</bpmn:incoming>
+      <bpmn:outgoing>Flow_ListToEnd</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DOA_CreateAttendeeList_To_List">
+        <bpmn:targetRef>DataObject_AttendeeList</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:dataObjectReference id="DataObject_AttendeeList" name="Attendee List | string_array | data.attendees = [&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charlie&#39;]" />
+    <bpmn:endEvent id="EndEvent_ProcessComplete" name="Tree House and Party Ready">
+      <bpmn:incoming>Flow_ListToEnd</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Seq_Start_Collect" name="" sourceRef="Start_1" targetRef="Task_Collect" />
-    <bpmn:sequenceFlow id="Seq_Collect_Send" name="" sourceRef="Task_Collect" targetRef="Send_Architect" />
-    <bpmn:sequenceFlow id="Seq_Send_Receive" name="" sourceRef="Send_Architect" targetRef="Receive_Draft" />
-    <bpmn:sequenceFlow id="Seq_Receive_Excl" name="" sourceRef="Receive_Draft" targetRef="Excl_Refine" />
-    <bpmn:sequenceFlow id="Seq_Excl_Refine" name="Yes" sourceRef="Excl_Refine" targetRef="Task_Refine">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">Yes</bpmn:conditionExpression>
+    <bpmn:sequenceFlow id="Flow_StartToCollect" name="" sourceRef="StartEvent_ProjectStarted" targetRef="Task_CollectRequirements" />
+    <bpmn:sequenceFlow id="Flow_CollectToSend" name="" sourceRef="Task_CollectRequirements" targetRef="Task_SendRequirements" />
+    <bpmn:sequenceFlow id="Flow_SendToAwait" name="" sourceRef="Task_SendRequirements" targetRef="Gateway_AwaitInput" />
+    <bpmn:sequenceFlow id="Flow_AwaitToDraft" name="" sourceRef="Gateway_AwaitInput" targetRef="Task_ArchitectSendsDraft" />
+    <bpmn:sequenceFlow id="Flow_DraftToReview" name="" sourceRef="Task_ArchitectSendsDraft" targetRef="Task_ReviewAndRefineDraft" />
+    <bpmn:sequenceFlow id="Flow_ReviewToDecision" name="" sourceRef="Task_ReviewAndRefineDraft" targetRef="Gateway_RefinementsNeeded" />
+    <bpmn:sequenceFlow id="Flow_DecisionToAwait_Yes" name="Yes, Refinements Needed" sourceRef="Gateway_RefinementsNeeded" targetRef="Gateway_AwaitInput">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">Yes, Refinements Needed</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Seq_Excl_Materials" name="" sourceRef="Excl_Refine" targetRef="Task_Materials" />
-    <bpmn:sequenceFlow id="Seq_Refine_Send" name="" sourceRef="Task_Refine" targetRef="Send_Refined" />
-    <bpmn:sequenceFlow id="Seq_Send_Receive" name="" sourceRef="Send_Refined" targetRef="Receive_Draft" />
-    <bpmn:sequenceFlow id="Seq_Materials_Split" name="" sourceRef="Task_Materials" targetRef="Para_Split" />
-    <bpmn:sequenceFlow id="Seq_Split_Order" name="" sourceRef="Para_Split" targetRef="Task_Order" />
-    <bpmn:sequenceFlow id="Seq_Split_Friends" name="" sourceRef="Para_Split" targetRef="Send_Friends" />
-    <bpmn:sequenceFlow id="Seq_Order_Join" name="" sourceRef="Task_Order" targetRef="Para_Join" />
-    <bpmn:sequenceFlow id="Seq_Friends_Join" name="" sourceRef="Send_Friends" targetRef="Para_Join" />
-    <bpmn:sequenceFlow id="Seq_Join_Built" name="" sourceRef="Para_Join" targetRef="Catch_Built" />
-    <bpmn:sequenceFlow id="Seq_Built_Invite" name="" sourceRef="Catch_Built" targetRef="Task_Invite" />
-    <bpmn:sequenceFlow id="Seq_Invite_Snacks" name="" sourceRef="Task_Invite" targetRef="Task_Snacks" />
-    <bpmn:sequenceFlow id="Seq_Snacks_End" name="" sourceRef="Task_Snacks" targetRef="End_1" />
-    <bpmn:association id="DIA_Data_Snacks" associationDirection="One" sourceRef="Data_Attendees" targetRef="Task_Snacks" />
-  </bpmn:process>
-  <bpmn:process id="Proc_Architect_Pool" name="Architect" isExecutable="true">
-    <bpmn:startEvent id="Start_Architect" name="Receive Requirements">
-      <bpmn:outgoing>Seq_Start_Create</bpmn:outgoing>
-      <bpmn:messageEventDefinition />
-    </bpmn:startEvent>
-    <bpmn:task id="Task_Create" name="Create Draft">
-      <bpmn:incoming>Seq_Start_Create</bpmn:incoming>
-      <bpmn:outgoing>Seq_Create_Send</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:sendTask id="Send_Draft" name="Send Draft">
-      <bpmn:incoming>Seq_Create_Send</bpmn:incoming>
-      <bpmn:outgoing>Seq_Send_Catch</bpmn:outgoing>
-    </bpmn:sendTask>
-    <bpmn:intermediateCatchEvent id="Catch_Refined" name="Receive Refined">
-      <bpmn:incoming>Seq_Send_Catch</bpmn:incoming>
-      <bpmn:outgoing>Seq_Catch_Update</bpmn:outgoing>
-      <bpmn:messageEventDefinition />
-    </bpmn:intermediateCatchEvent>
-    <bpmn:task id="Task_Update" name="Update Draft">
-      <bpmn:incoming>Seq_Catch_Update</bpmn:incoming>
-      <bpmn:outgoing>Seq_Update_Send</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:sendTask id="Send_Updated" name="Send Updated Draft">
-      <bpmn:incoming>Seq_Update_Send</bpmn:incoming>
-    </bpmn:sendTask>
-    <bpmn:sequenceFlow id="Seq_Start_Create" name="" sourceRef="Start_Architect" targetRef="Task_Create" />
-    <bpmn:sequenceFlow id="Seq_Create_Send" name="" sourceRef="Task_Create" targetRef="Send_Draft" />
-    <bpmn:sequenceFlow id="Seq_Send_Catch" name="" sourceRef="Send_Draft" targetRef="Catch_Refined" />
-    <bpmn:sequenceFlow id="Seq_Catch_Update" name="" sourceRef="Catch_Refined" targetRef="Task_Update" />
-    <bpmn:sequenceFlow id="Seq_Update_Send" name="" sourceRef="Task_Update" targetRef="Send_Updated" />
-  </bpmn:process>
-  <bpmn:process id="Proc_Friends_Pool" name="Friends" isExecutable="true">
-    <bpmn:startEvent id="Start_Build" name="Build Request">
-      <bpmn:outgoing>Seq_Start_Build</bpmn:outgoing>
-      <bpmn:messageEventDefinition />
-    </bpmn:startEvent>
-    <bpmn:task id="Task_Build" name="Build House">
-      <bpmn:incoming>Seq_Start_Build</bpmn:incoming>
-      <bpmn:outgoing>Seq_Build_Send</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:sendTask id="Send_Built" name="Notify Built">
-      <bpmn:incoming>Seq_Build_Send</bpmn:incoming>
-    </bpmn:sendTask>
-    <bpmn:startEvent id="Start_Invite" name="Invitation Received">
-      <bpmn:messageEventDefinition />
-    </bpmn:startEvent>
-    <bpmn:sequenceFlow id="Seq_Start_Build" name="" sourceRef="Start_Build" targetRef="Task_Build" />
-    <bpmn:sequenceFlow id="Seq_Build_Send" name="" sourceRef="Task_Build" targetRef="Send_Built" />
+    <bpmn:sequenceFlow id="Flow_DecisionToList_No" name="No, Draft Finalized" sourceRef="Gateway_RefinementsNeeded" targetRef="Task_CreateMaterialList" />
+    <bpmn:sequenceFlow id="Flow_ListToOrder" name="" sourceRef="Task_CreateMaterialList" targetRef="Task_OrderMaterials" />
+    <bpmn:sequenceFlow id="Flow_OrderToSplit" name="" sourceRef="Task_OrderMaterials" targetRef="Gateway_ParallelSplit" />
+    <bpmn:sequenceFlow id="Flow_SplitToAwait" name="" sourceRef="Gateway_ParallelSplit" targetRef="Task_AwaitMaterialDelivery" />
+    <bpmn:sequenceFlow id="Flow_SplitToContact" name="" sourceRef="Gateway_ParallelSplit" targetRef="Task_ContactFriends" />
+    <bpmn:sequenceFlow id="Flow_AwaitToJoin" name="" sourceRef="Task_AwaitMaterialDelivery" targetRef="Gateway_ParallelJoin" />
+    <bpmn:sequenceFlow id="Flow_ContactToJoin" name="" sourceRef="Task_ContactFriends" targetRef="Gateway_ParallelJoin" />
+    <bpmn:sequenceFlow id="Flow_JoinToInvite" name="" sourceRef="Gateway_ParallelJoin" targetRef="Task_SendPartyInvitations" />
+    <bpmn:sequenceFlow id="Flow_InviteToList" name="" sourceRef="Task_SendPartyInvitations" targetRef="Task_CreateAttendeeList" />
+    <bpmn:sequenceFlow id="Flow_ListToEnd" name="" sourceRef="Task_CreateAttendeeList" targetRef="EndEvent_ProcessComplete" />
+    <bpmn:association id="DIA_ReqList_To_Send" associationDirection="One" sourceRef="DataObject_RequirementsList" targetRef="Task_SendRequirements" />
+    <bpmn:association id="DIA_Draft_To_Review" associationDirection="One" sourceRef="DataObject_ArchitectDraft" targetRef="Task_ReviewAndRefineDraft" />
+    <bpmn:association id="DIA_Draft_To_CreateMaterialList" associationDirection="One" sourceRef="DataObject_ArchitectDraft" targetRef="Task_CreateMaterialList" />
+    <bpmn:association id="DIA_MaterialList_To_Order" associationDirection="One" sourceRef="DataObject_MaterialList" targetRef="Task_OrderMaterials" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_1">
     <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Collab_1">
-      <bpmndi:BPMNShape id="Part_Friends_Pool_di" bpmnElement="Part_Friends_Pool" isHorizontal="true">
-        <dc:Bounds x="500" y="860" width="478" height="258" />
+      <bpmndi:BPMNShape id="Part_TreeHouseBuildingProcess_di" bpmnElement="Part_TreeHouseBuildingProcess" isHorizontal="true">
+        <dc:Bounds x="500" y="0" width="2246" height="280" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Part_Architect_Pool_di" bpmnElement="Part_Architect_Pool" isHorizontal="true">
-        <dc:Bounds x="500" y="570" width="928" height="140" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Part_User_Pool_di" bpmnElement="Part_User_Pool" isHorizontal="true">
-        <dc:Bounds x="500" y="0" width="1946" height="420" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Start_1_di" bpmnElement="Start_1">
+      <bpmndi:BPMNShape id="StartEvent_ProjectStarted_di" bpmnElement="StartEvent_ProjectStarted">
         <dc:Bounds x="580" y="52" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Collect_di" bpmnElement="Task_Collect">
+      <bpmndi:BPMNShape id="Task_CollectRequirements_di" bpmnElement="Task_CollectRequirements">
         <dc:Bounds x="698" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Send_Architect_di" bpmnElement="Send_Architect">
+      <bpmndi:BPMNShape id="Task_SendRequirements_di" bpmnElement="Task_SendRequirements">
         <dc:Bounds x="848" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Receive_Draft_di" bpmnElement="Receive_Draft">
-        <dc:Bounds x="998" y="30" width="100" height="80" />
+      <bpmndi:BPMNShape id="Gateway_AwaitInput_di" bpmnElement="Gateway_AwaitInput" isMarkerVisible="true">
+        <dc:Bounds x="1023" y="45" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Excl_Refine_di" bpmnElement="Excl_Refine" isMarkerVisible="true">
-        <dc:Bounds x="1173" y="45" width="50" height="50" />
+      <bpmndi:BPMNShape id="Task_ArchitectSendsDraft_di" bpmnElement="Task_ArchitectSendsDraft">
+        <dc:Bounds x="1148" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Refine_di" bpmnElement="Task_Refine">
+      <bpmndi:BPMNShape id="Task_ReviewAndRefineDraft_di" bpmnElement="Task_ReviewAndRefineDraft">
         <dc:Bounds x="1298" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Send_Refined_di" bpmnElement="Send_Refined">
-        <dc:Bounds x="1448" y="30" width="100" height="80" />
+      <bpmndi:BPMNShape id="Gateway_RefinementsNeeded_di" bpmnElement="Gateway_RefinementsNeeded" isMarkerVisible="true">
+        <dc:Bounds x="1473" y="45" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Data_Attendees_di" bpmnElement="Data_Attendees">
-        <dc:Bounds x="2080" y="300" width="36" height="50" />
+      <bpmndi:BPMNShape id="Task_CreateMaterialList_di" bpmnElement="Task_CreateMaterialList">
+        <dc:Bounds x="1598" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Materials_di" bpmnElement="Task_Materials">
-        <dc:Bounds x="1298" y="170" width="100" height="80" />
+      <bpmndi:BPMNShape id="Task_OrderMaterials_di" bpmnElement="Task_OrderMaterials">
+        <dc:Bounds x="1748" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Para_Split_di" bpmnElement="Para_Split">
-        <dc:Bounds x="1473" y="185" width="50" height="50" />
+      <bpmndi:BPMNShape id="Gateway_ParallelSplit_di" bpmnElement="Gateway_ParallelSplit">
+        <dc:Bounds x="1923" y="45" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Order_di" bpmnElement="Task_Order">
-        <dc:Bounds x="1598" y="170" width="100" height="80" />
+      <bpmndi:BPMNShape id="Task_AwaitMaterialDelivery_di" bpmnElement="Task_AwaitMaterialDelivery">
+        <dc:Bounds x="2048" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Para_Join_di" bpmnElement="Para_Join">
-        <dc:Bounds x="1773" y="185" width="50" height="50" />
+      <bpmndi:BPMNShape id="Gateway_ParallelJoin_di" bpmnElement="Gateway_ParallelJoin">
+        <dc:Bounds x="2223" y="45" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Catch_Built_di" bpmnElement="Catch_Built">
-        <dc:Bounds x="1930" y="192" width="36" height="36" />
+      <bpmndi:BPMNShape id="Task_SendPartyInvitations_di" bpmnElement="Task_SendPartyInvitations">
+        <dc:Bounds x="2348" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Invite_di" bpmnElement="Task_Invite">
+      <bpmndi:BPMNShape id="Task_CreateAttendeeList_di" bpmnElement="Task_CreateAttendeeList">
+        <dc:Bounds x="2498" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_ProcessComplete_di" bpmnElement="EndEvent_ProcessComplete">
+        <dc:Bounds x="2680" y="52" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObject_RequirementsList_di" bpmnElement="DataObject_RequirementsList">
+        <dc:Bounds x="730" y="160" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ContactFriends_di" bpmnElement="Task_ContactFriends">
         <dc:Bounds x="2048" y="170" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Snacks_di" bpmnElement="Task_Snacks">
-        <dc:Bounds x="2198" y="170" width="100" height="80" />
+      <bpmndi:BPMNShape id="DataObject_ArchitectDraft_di" bpmnElement="DataObject_ArchitectDraft">
+        <dc:Bounds x="1180" y="160" width="36" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="End_1_di" bpmnElement="End_1">
-        <dc:Bounds x="2380" y="192" width="36" height="36" />
+      <bpmndi:BPMNShape id="DataObject_RefinementDecision_di" bpmnElement="DataObject_RefinementDecision">
+        <dc:Bounds x="1330" y="160" width="36" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Send_Friends_di" bpmnElement="Send_Friends">
-        <dc:Bounds x="1598" y="310" width="100" height="80" />
+      <bpmndi:BPMNShape id="DataObject_MaterialList_di" bpmnElement="DataObject_MaterialList">
+        <dc:Bounds x="1630" y="160" width="36" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Seq_Start_Collect_di" bpmnElement="Seq_Start_Collect">
+      <bpmndi:BPMNShape id="DataObject_AttendeeList_di" bpmnElement="DataObject_AttendeeList">
+        <dc:Bounds x="2530" y="160" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_StartToCollect_di" bpmnElement="Flow_StartToCollect">
         <di:waypoint x="616" y="70" />
         <di:waypoint x="698" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Collect_Send_di" bpmnElement="Seq_Collect_Send">
+      <bpmndi:BPMNEdge id="Flow_CollectToSend_di" bpmnElement="Flow_CollectToSend">
         <di:waypoint x="798" y="70" />
         <di:waypoint x="848" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Send_Receive_di" bpmnElement="Seq_Send_Receive">
+      <bpmndi:BPMNEdge id="Flow_SendToAwait_di" bpmnElement="Flow_SendToAwait">
         <di:waypoint x="948" y="70" />
-        <di:waypoint x="998" y="70" />
+        <di:waypoint x="1023" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Receive_Excl_di" bpmnElement="Seq_Receive_Excl">
-        <di:waypoint x="1098" y="70" />
-        <di:waypoint x="1173" y="70" />
+      <bpmndi:BPMNEdge id="Flow_AwaitToDraft_di" bpmnElement="Flow_AwaitToDraft">
+        <di:waypoint x="1073" y="70" />
+        <di:waypoint x="1148" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Excl_Refine_di" bpmnElement="Seq_Excl_Refine">
-        <di:waypoint x="1223" y="70" />
+      <bpmndi:BPMNEdge id="Flow_DraftToReview_di" bpmnElement="Flow_DraftToReview">
+        <di:waypoint x="1248" y="70" />
         <di:waypoint x="1298" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Excl_Materials_di" bpmnElement="Seq_Excl_Materials">
-        <di:waypoint x="1198" y="95" />
-        <di:waypoint x="1198" y="210" />
-        <di:waypoint x="1298" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Refine_Send_di" bpmnElement="Seq_Refine_Send">
+      <bpmndi:BPMNEdge id="Flow_ReviewToDecision_di" bpmnElement="Flow_ReviewToDecision">
         <di:waypoint x="1398" y="70" />
-        <di:waypoint x="1448" y="70" />
+        <di:waypoint x="1473" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Materials_Split_di" bpmnElement="Seq_Materials_Split">
-        <di:waypoint x="1398" y="210" />
-        <di:waypoint x="1473" y="210" />
+      <bpmndi:BPMNEdge id="Flow_DecisionToAwait_Yes_di" bpmnElement="Flow_DecisionToAwait_Yes">
+        <di:waypoint x="1498" y="95" />
+        <di:waypoint x="1498" y="140" />
+        <di:waypoint x="1048" y="140" />
+        <di:waypoint x="1048" y="95" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Split_Order_di" bpmnElement="Seq_Split_Order">
-        <di:waypoint x="1523" y="210" />
-        <di:waypoint x="1598" y="210" />
+      <bpmndi:BPMNEdge id="Flow_DecisionToList_No_di" bpmnElement="Flow_DecisionToList_No">
+        <di:waypoint x="1523" y="70" />
+        <di:waypoint x="1598" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Split_Friends_di" bpmnElement="Seq_Split_Friends">
-        <di:waypoint x="1498" y="235" />
-        <di:waypoint x="1498" y="350" />
-        <di:waypoint x="1598" y="350" />
+      <bpmndi:BPMNEdge id="Flow_ListToOrder_di" bpmnElement="Flow_ListToOrder">
+        <di:waypoint x="1698" y="70" />
+        <di:waypoint x="1748" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Order_Join_di" bpmnElement="Seq_Order_Join">
-        <di:waypoint x="1698" y="210" />
-        <di:waypoint x="1773" y="210" />
+      <bpmndi:BPMNEdge id="Flow_OrderToSplit_di" bpmnElement="Flow_OrderToSplit">
+        <di:waypoint x="1848" y="70" />
+        <di:waypoint x="1923" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Join_Built_di" bpmnElement="Seq_Join_Built">
-        <di:waypoint x="1823" y="210" />
-        <di:waypoint x="1930" y="210" />
+      <bpmndi:BPMNEdge id="Flow_SplitToAwait_di" bpmnElement="Flow_SplitToAwait">
+        <di:waypoint x="1973" y="70" />
+        <di:waypoint x="2048" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Built_Invite_di" bpmnElement="Seq_Built_Invite">
-        <di:waypoint x="1966" y="210" />
+      <bpmndi:BPMNEdge id="Flow_SplitToContact_di" bpmnElement="Flow_SplitToContact">
+        <di:waypoint x="1948" y="95" />
+        <di:waypoint x="1948" y="210" />
         <di:waypoint x="2048" y="210" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Invite_Snacks_di" bpmnElement="Seq_Invite_Snacks">
+      <bpmndi:BPMNEdge id="Flow_AwaitToJoin_di" bpmnElement="Flow_AwaitToJoin">
+        <di:waypoint x="2148" y="70" />
+        <di:waypoint x="2223" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_JoinToInvite_di" bpmnElement="Flow_JoinToInvite">
+        <di:waypoint x="2273" y="70" />
+        <di:waypoint x="2348" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_InviteToList_di" bpmnElement="Flow_InviteToList">
+        <di:waypoint x="2448" y="70" />
+        <di:waypoint x="2498" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ListToEnd_di" bpmnElement="Flow_ListToEnd">
+        <di:waypoint x="2598" y="70" />
+        <di:waypoint x="2680" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ContactToJoin_di" bpmnElement="Flow_ContactToJoin">
         <di:waypoint x="2148" y="210" />
-        <di:waypoint x="2198" y="210" />
+        <di:waypoint x="2248" y="210" />
+        <di:waypoint x="2248" y="95" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Snacks_End_di" bpmnElement="Seq_Snacks_End">
-        <di:waypoint x="2298" y="210" />
-        <di:waypoint x="2380" y="210" />
+      <bpmndi:BPMNEdge id="DOA_Collect_To_ReqList_di" bpmnElement="DOA_Collect_To_ReqList">
+        <di:waypoint x="748" y="110" />
+        <di:waypoint x="748" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Friends_Join_di" bpmnElement="Seq_Friends_Join">
-        <di:waypoint x="1698" y="350" />
-        <di:waypoint x="1798" y="350" />
-        <di:waypoint x="1798" y="235" />
+      <bpmndi:BPMNEdge id="DIA_ReqList_To_Send_di" bpmnElement="DIA_ReqList_To_Send">
+        <di:waypoint x="766" y="185" />
+        <di:waypoint x="848" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Start_Architect_di" bpmnElement="Start_Architect">
-        <dc:Bounds x="580" y="622" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Create_di" bpmnElement="Task_Create">
-        <dc:Bounds x="698" y="600" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Send_Draft_di" bpmnElement="Send_Draft">
-        <dc:Bounds x="848" y="600" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Catch_Refined_di" bpmnElement="Catch_Refined">
-        <dc:Bounds x="1030" y="622" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Update_di" bpmnElement="Task_Update">
-        <dc:Bounds x="1148" y="600" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Send_Updated_di" bpmnElement="Send_Updated">
-        <dc:Bounds x="1298" y="600" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Seq_Start_Create_di" bpmnElement="Seq_Start_Create">
-        <di:waypoint x="616" y="640" />
-        <di:waypoint x="698" y="640" />
+      <bpmndi:BPMNEdge id="DOA_Architect_To_Draft_di" bpmnElement="DOA_Architect_To_Draft">
+        <di:waypoint x="1198" y="110" />
+        <di:waypoint x="1198" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Create_Send_di" bpmnElement="Seq_Create_Send">
-        <di:waypoint x="798" y="640" />
-        <di:waypoint x="848" y="640" />
+      <bpmndi:BPMNEdge id="DIA_Draft_To_Review_di" bpmnElement="DIA_Draft_To_Review">
+        <di:waypoint x="1216" y="185" />
+        <di:waypoint x="1298" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Send_Catch_di" bpmnElement="Seq_Send_Catch">
-        <di:waypoint x="948" y="640" />
-        <di:waypoint x="1030" y="640" />
+      <bpmndi:BPMNEdge id="DOA_Review_To_Decision_di" bpmnElement="DOA_Review_To_Decision">
+        <di:waypoint x="1348" y="110" />
+        <di:waypoint x="1348" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Catch_Update_di" bpmnElement="Seq_Catch_Update">
-        <di:waypoint x="1066" y="640" />
-        <di:waypoint x="1148" y="640" />
+      <bpmndi:BPMNEdge id="DIA_Draft_To_CreateMaterialList_di" bpmnElement="DIA_Draft_To_CreateMaterialList">
+        <di:waypoint x="1216" y="185" />
+        <di:waypoint x="1598" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Update_Send_di" bpmnElement="Seq_Update_Send">
-        <di:waypoint x="1248" y="640" />
-        <di:waypoint x="1298" y="640" />
+      <bpmndi:BPMNEdge id="DOA_CreateList_To_MaterialList_di" bpmnElement="DOA_CreateList_To_MaterialList">
+        <di:waypoint x="1648" y="110" />
+        <di:waypoint x="1648" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Start_Build_di" bpmnElement="Start_Build">
-        <dc:Bounds x="580" y="912" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Build_di" bpmnElement="Task_Build">
-        <dc:Bounds x="698" y="890" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Send_Built_di" bpmnElement="Send_Built">
-        <dc:Bounds x="848" y="890" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Start_Invite_di" bpmnElement="Start_Invite">
-        <dc:Bounds x="580" y="1052" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Seq_Start_Build_di" bpmnElement="Seq_Start_Build">
-        <di:waypoint x="616" y="930" />
-        <di:waypoint x="698" y="930" />
+      <bpmndi:BPMNEdge id="DIA_MaterialList_To_Order_di" bpmnElement="DIA_MaterialList_To_Order">
+        <di:waypoint x="1666" y="185" />
+        <di:waypoint x="1748" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Seq_Build_Send_di" bpmnElement="Seq_Build_Send">
-        <di:waypoint x="798" y="930" />
-        <di:waypoint x="848" y="930" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Msg_Send_Architect_di" bpmnElement="Msg_Send_Architect">
-        <di:waypoint x="898" y="110" />
-        <di:waypoint x="598" y="622" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Msg_Send_Refined_di" bpmnElement="Msg_Send_Refined">
-        <di:waypoint x="1498" y="110" />
-        <di:waypoint x="1048" y="622" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Msg_Send_Friends_di" bpmnElement="Msg_Send_Friends">
-        <di:waypoint x="1598" y="350" />
-        <di:waypoint x="616" y="930" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Msg_Send_Invite_di" bpmnElement="Msg_Send_Invite">
-        <di:waypoint x="2048" y="210" />
-        <di:waypoint x="616" y="1070" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Msg_Send_Draft_di" bpmnElement="Msg_Send_Draft">
-        <di:waypoint x="898" y="600" />
-        <di:waypoint x="1048" y="110" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Msg_Send_Updated_di" bpmnElement="Msg_Send_Updated">
-        <di:waypoint x="1348" y="600" />
-        <di:waypoint x="1048" y="110" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Msg_Send_Built_di" bpmnElement="Msg_Send_Built">
-        <di:waypoint x="948" y="930" />
-        <di:waypoint x="1930" y="210" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DOA_Invite_Data_di" bpmnElement="DOA_Invite_Data">
-        <di:waypoint x="2098" y="250" />
-        <di:waypoint x="2098" y="300" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DIA_Data_Snacks_di" bpmnElement="DIA_Data_Snacks">
-        <di:waypoint x="2116" y="325" />
-        <di:waypoint x="2198" y="210" />
+      <bpmndi:BPMNEdge id="DOA_CreateAttendeeList_To_List_di" bpmnElement="DOA_CreateAttendeeList_To_List">
+        <di:waypoint x="2548" y="110" />
+        <di:waypoint x="2548" y="160" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
