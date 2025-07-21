@@ -9,50 +9,49 @@
     </bpmn:startEvent>
     <bpmn:task id="Task_CollectRequirements" name="Collect Requirements">
       <bpmn:incoming>Flow_StartToCollect</bpmn:incoming>
-      <bpmn:outgoing>Flow_CollectToSend</bpmn:outgoing>
+      <bpmn:outgoing>Flow_CollectToAwait</bpmn:outgoing>
       <bpmn:dataOutputAssociation id="DOA_Collect_To_ReqList">
         <bpmn:targetRef>DataObject_RequirementsList</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
     </bpmn:task>
-    <bpmn:dataObjectReference id="DataObject_RequirementsList" name="Requirements List | string_array | data.requirements = [&#39;sturdy foundation&#39;, &#39;weatherproof roof&#39;, &#39;rope ladder&#39;]" />
-    <bpmn:task id="Task_SendRequirements" name="Send Requirements to Architect">
-      <bpmn:incoming>Flow_CollectToSend</bpmn:incoming>
-      <bpmn:outgoing>Flow_SendToAwait</bpmn:outgoing>
-    </bpmn:task>
     <bpmn:exclusiveGateway id="Gateway_AwaitInput" name="Await Architect Input">
-      <bpmn:incoming>Flow_SendToAwait</bpmn:incoming>
-      <bpmn:incoming>Flow_DecisionToAwait_Yes</bpmn:incoming>
-      <bpmn:outgoing>Flow_AwaitToDraft</bpmn:outgoing>
+      <bpmn:incoming>Flow_CollectToAwait</bpmn:incoming>
+      <bpmn:incoming>Flow_RefineToAwait</bpmn:incoming>
+      <bpmn:outgoing>Flow_AwaitToSend</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:task id="Task_ArchitectSendsDraft" name="Architect Sends Draft">
-      <bpmn:incoming>Flow_AwaitToDraft</bpmn:incoming>
+    <bpmn:task id="Task_SendRequirements" name="Send Requirements to Architect and recieve Architect Draft | data.requirements | data.architectural_draft | createDraft">
+      <bpmn:incoming>Flow_AwaitToSend</bpmn:incoming>
       <bpmn:outgoing>Flow_DraftToReview</bpmn:outgoing>
       <bpmn:dataOutputAssociation id="DOA_Architect_To_Draft">
         <bpmn:targetRef>DataObject_ArchitectDraft</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
     </bpmn:task>
-    <bpmn:dataObjectReference id="DataObject_ArchitectDraft" name="Architect Draft | string | data.architect_draft = &#39;Initial blueprint with dimensions and support points.&#39;" />
-    <bpmn:task id="Task_ReviewAndRefineDraft" name="Review and Refine Draft">
+    <bpmn:task id="Task_ReviewDraft" name="Review Draft | data.architectural_draft | data.refinement_decision | makeDecision">
       <bpmn:incoming>Flow_DraftToReview</bpmn:incoming>
       <bpmn:outgoing>Flow_ReviewToDecision</bpmn:outgoing>
       <bpmn:dataOutputAssociation id="DOA_Review_To_Decision">
         <bpmn:targetRef>DataObject_RefinementDecision</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
     </bpmn:task>
-    <bpmn:dataObjectReference id="DataObject_RefinementDecision" name="Refinement Decision | boolean | data.refinement_decision = [true, false].sample" />
     <bpmn:exclusiveGateway id="Gateway_RefinementsNeeded" name="Refinements Needed? | boolean | data.refinement_decision == true" default="Flow_DecisionToList_No">
       <bpmn:incoming>Flow_ReviewToDecision</bpmn:incoming>
-      <bpmn:outgoing>Flow_DecisionToAwait_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_DecisionToRefine_Yes</bpmn:outgoing>
       <bpmn:outgoing>Flow_DecisionToList_No</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:task id="Task_CreateMaterialList" name="Create List of Needed Materials">
+    <bpmn:task id="Task_RefineRequirements" name="Refine Requirements | data.requirements | data.requirements | updateRequirements">
+      <bpmn:incoming>Flow_DecisionToRefine_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_RefineToAwait</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DOA_RefineReq_RequirementsList">
+        <bpmn:targetRef>DataObject_RequirementsList</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:task>
+    <bpmn:task id="Task_CreateMaterialList" name="Create List of Needed Materials | data.architectural_draft | data.materials | generateMaterials">
       <bpmn:incoming>Flow_DecisionToList_No</bpmn:incoming>
       <bpmn:outgoing>Flow_ListToOrder</bpmn:outgoing>
       <bpmn:dataOutputAssociation id="DOA_CreateList_To_MaterialList">
         <bpmn:targetRef>DataObject_MaterialList</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
     </bpmn:task>
-    <bpmn:dataObjectReference id="DataObject_MaterialList" name="Material List | string_array | data.materials = [&#39;20kg wood bars&#39;, &#39;roof tiles&#39;, &#39;nails&#39;, &#39;screws&#39;]" />
     <bpmn:task id="Task_OrderMaterials" name="Order Materials">
       <bpmn:incoming>Flow_ListToOrder</bpmn:incoming>
       <bpmn:outgoing>Flow_OrderToSplit</bpmn:outgoing>
@@ -86,19 +85,23 @@
         <bpmn:targetRef>DataObject_AttendeeList</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
     </bpmn:task>
-    <bpmn:dataObjectReference id="DataObject_AttendeeList" name="Attendee List | string_array | data.attendees = [&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charlie&#39;]" />
     <bpmn:endEvent id="EndEvent_ProcessComplete" name="Tree House and Party Ready">
       <bpmn:incoming>Flow_ListToEnd</bpmn:incoming>
     </bpmn:endEvent>
+    <bpmn:dataObjectReference id="DataObject_RequirementsList" name="Requirements List | string_array | data.requirements = [&#39;sturdy foundation&#39;, &#39;weatherproof roof&#39;, &#39;rope ladder&#39;]" />
+    <bpmn:dataObjectReference id="DataObject_ArchitectDraft" name="Architectural Draft" />
+    <bpmn:dataObjectReference id="DataObject_RefinementDecision" name="Refinement Decision" />
+    <bpmn:dataObjectReference id="DataObject_MaterialList" name="Material List" />
+    <bpmn:dataObjectReference id="DataObject_AttendeeList" name="Attendee List | string_array | data.attendees = [&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charlie&#39;]" />
     <bpmn:sequenceFlow id="Flow_StartToCollect" name="" sourceRef="StartEvent_ProjectStarted" targetRef="Task_CollectRequirements" />
-    <bpmn:sequenceFlow id="Flow_CollectToSend" name="" sourceRef="Task_CollectRequirements" targetRef="Task_SendRequirements" />
-    <bpmn:sequenceFlow id="Flow_SendToAwait" name="" sourceRef="Task_SendRequirements" targetRef="Gateway_AwaitInput" />
-    <bpmn:sequenceFlow id="Flow_AwaitToDraft" name="" sourceRef="Gateway_AwaitInput" targetRef="Task_ArchitectSendsDraft" />
-    <bpmn:sequenceFlow id="Flow_DraftToReview" name="" sourceRef="Task_ArchitectSendsDraft" targetRef="Task_ReviewAndRefineDraft" />
-    <bpmn:sequenceFlow id="Flow_ReviewToDecision" name="" sourceRef="Task_ReviewAndRefineDraft" targetRef="Gateway_RefinementsNeeded" />
-    <bpmn:sequenceFlow id="Flow_DecisionToAwait_Yes" name="Yes, Refinements Needed" sourceRef="Gateway_RefinementsNeeded" targetRef="Gateway_AwaitInput">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">Yes, Refinements Needed</bpmn:conditionExpression>
+    <bpmn:sequenceFlow id="Flow_CollectToAwait" name="" sourceRef="Task_CollectRequirements" targetRef="Gateway_AwaitInput" />
+    <bpmn:sequenceFlow id="Flow_AwaitToSend" name="" sourceRef="Gateway_AwaitInput" targetRef="Task_SendRequirements" />
+    <bpmn:sequenceFlow id="Flow_DraftToReview" name="" sourceRef="Task_SendRequirements" targetRef="Task_ReviewDraft" />
+    <bpmn:sequenceFlow id="Flow_ReviewToDecision" name="" sourceRef="Task_ReviewDraft" targetRef="Gateway_RefinementsNeeded" />
+    <bpmn:sequenceFlow id="Flow_DecisionToRefine_Yes" name="Yes, Refinements Needed" sourceRef="Gateway_RefinementsNeeded" targetRef="Task_RefineRequirements">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">data.refinement_decision == true</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_RefineToAwait" name="" sourceRef="Task_RefineRequirements" targetRef="Gateway_AwaitInput" />
     <bpmn:sequenceFlow id="Flow_DecisionToList_No" name="No, Draft Finalized" sourceRef="Gateway_RefinementsNeeded" targetRef="Task_CreateMaterialList" />
     <bpmn:sequenceFlow id="Flow_ListToOrder" name="" sourceRef="Task_CreateMaterialList" targetRef="Task_OrderMaterials" />
     <bpmn:sequenceFlow id="Flow_OrderToSplit" name="" sourceRef="Task_OrderMaterials" targetRef="Gateway_ParallelSplit" />
@@ -110,14 +113,15 @@
     <bpmn:sequenceFlow id="Flow_InviteToList" name="" sourceRef="Task_SendPartyInvitations" targetRef="Task_CreateAttendeeList" />
     <bpmn:sequenceFlow id="Flow_ListToEnd" name="" sourceRef="Task_CreateAttendeeList" targetRef="EndEvent_ProcessComplete" />
     <bpmn:association id="DIA_ReqList_To_Send" associationDirection="One" sourceRef="DataObject_RequirementsList" targetRef="Task_SendRequirements" />
-    <bpmn:association id="DIA_Draft_To_Review" associationDirection="One" sourceRef="DataObject_ArchitectDraft" targetRef="Task_ReviewAndRefineDraft" />
+    <bpmn:association id="DIA_Draft_To_Review" associationDirection="One" sourceRef="DataObject_ArchitectDraft" targetRef="Task_ReviewDraft" />
+    <bpmn:association id="DIA_RequirementsList_RefineReq" associationDirection="One" sourceRef="DataObject_RequirementsList" targetRef="Task_RefineRequirements" />
     <bpmn:association id="DIA_Draft_To_CreateMaterialList" associationDirection="One" sourceRef="DataObject_ArchitectDraft" targetRef="Task_CreateMaterialList" />
     <bpmn:association id="DIA_MaterialList_To_Order" associationDirection="One" sourceRef="DataObject_MaterialList" targetRef="Task_OrderMaterials" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagram_1">
     <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Collab_1">
       <bpmndi:BPMNShape id="Part_TreeHouseBuildingProcess_di" bpmnElement="Part_TreeHouseBuildingProcess" isHorizontal="true">
-        <dc:Bounds x="500" y="0" width="2246" height="280" />
+        <dc:Bounds x="500" y="0" width="2096" height="420" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_ProjectStarted_di" bpmnElement="StartEvent_ProjectStarted">
         <dc:Bounds x="580" y="52" width="36" height="36" />
@@ -125,134 +129,135 @@
       <bpmndi:BPMNShape id="Task_CollectRequirements_di" bpmnElement="Task_CollectRequirements">
         <dc:Bounds x="698" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_SendRequirements_di" bpmnElement="Task_SendRequirements">
-        <dc:Bounds x="848" y="30" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_AwaitInput_di" bpmnElement="Gateway_AwaitInput" isMarkerVisible="true">
-        <dc:Bounds x="1023" y="45" width="50" height="50" />
+        <dc:Bounds x="873" y="45" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_ArchitectSendsDraft_di" bpmnElement="Task_ArchitectSendsDraft">
+      <bpmndi:BPMNShape id="Task_SendRequirements_di" bpmnElement="Task_SendRequirements">
+        <dc:Bounds x="998" y="30" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ReviewDraft_di" bpmnElement="Task_ReviewDraft">
         <dc:Bounds x="1148" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_ReviewAndRefineDraft_di" bpmnElement="Task_ReviewAndRefineDraft">
-        <dc:Bounds x="1298" y="30" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_RefinementsNeeded_di" bpmnElement="Gateway_RefinementsNeeded" isMarkerVisible="true">
-        <dc:Bounds x="1473" y="45" width="50" height="50" />
+        <dc:Bounds x="1323" y="45" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_CreateMaterialList_di" bpmnElement="Task_CreateMaterialList">
-        <dc:Bounds x="1598" y="30" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_OrderMaterials_di" bpmnElement="Task_OrderMaterials">
-        <dc:Bounds x="1748" y="30" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_ParallelSplit_di" bpmnElement="Gateway_ParallelSplit">
-        <dc:Bounds x="1923" y="45" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_AwaitMaterialDelivery_di" bpmnElement="Task_AwaitMaterialDelivery">
-        <dc:Bounds x="2048" y="30" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_ParallelJoin_di" bpmnElement="Gateway_ParallelJoin">
-        <dc:Bounds x="2223" y="45" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_SendPartyInvitations_di" bpmnElement="Task_SendPartyInvitations">
-        <dc:Bounds x="2348" y="30" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_CreateAttendeeList_di" bpmnElement="Task_CreateAttendeeList">
-        <dc:Bounds x="2498" y="30" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_ProcessComplete_di" bpmnElement="EndEvent_ProcessComplete">
-        <dc:Bounds x="2680" y="52" width="36" height="36" />
+      <bpmndi:BPMNShape id="Task_RefineRequirements_di" bpmnElement="Task_RefineRequirements">
+        <dc:Bounds x="1448" y="30" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataObject_RequirementsList_di" bpmnElement="DataObject_RequirementsList">
         <dc:Bounds x="730" y="160" width="36" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_ContactFriends_di" bpmnElement="Task_ContactFriends">
-        <dc:Bounds x="2048" y="170" width="100" height="80" />
+      <bpmndi:BPMNShape id="Task_CreateMaterialList_di" bpmnElement="Task_CreateMaterialList">
+        <dc:Bounds x="1448" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_OrderMaterials_di" bpmnElement="Task_OrderMaterials">
+        <dc:Bounds x="1598" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ParallelSplit_di" bpmnElement="Gateway_ParallelSplit">
+        <dc:Bounds x="1773" y="185" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AwaitMaterialDelivery_di" bpmnElement="Task_AwaitMaterialDelivery">
+        <dc:Bounds x="1898" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ParallelJoin_di" bpmnElement="Gateway_ParallelJoin">
+        <dc:Bounds x="2073" y="185" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SendPartyInvitations_di" bpmnElement="Task_SendPartyInvitations">
+        <dc:Bounds x="2198" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CreateAttendeeList_di" bpmnElement="Task_CreateAttendeeList">
+        <dc:Bounds x="2348" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_ProcessComplete_di" bpmnElement="EndEvent_ProcessComplete">
+        <dc:Bounds x="2530" y="192" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataObject_ArchitectDraft_di" bpmnElement="DataObject_ArchitectDraft">
-        <dc:Bounds x="1180" y="160" width="36" height="50" />
+        <dc:Bounds x="1030" y="160" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ContactFriends_di" bpmnElement="Task_ContactFriends">
+        <dc:Bounds x="1898" y="310" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataObject_RefinementDecision_di" bpmnElement="DataObject_RefinementDecision">
-        <dc:Bounds x="1330" y="160" width="36" height="50" />
+        <dc:Bounds x="1180" y="160" width="36" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataObject_MaterialList_di" bpmnElement="DataObject_MaterialList">
-        <dc:Bounds x="1630" y="160" width="36" height="50" />
+        <dc:Bounds x="1480" y="300" width="36" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataObject_AttendeeList_di" bpmnElement="DataObject_AttendeeList">
-        <dc:Bounds x="2530" y="160" width="36" height="50" />
+        <dc:Bounds x="2380" y="300" width="36" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_StartToCollect_di" bpmnElement="Flow_StartToCollect">
         <di:waypoint x="616" y="70" />
         <di:waypoint x="698" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_CollectToSend_di" bpmnElement="Flow_CollectToSend">
+      <bpmndi:BPMNEdge id="Flow_CollectToAwait_di" bpmnElement="Flow_CollectToAwait">
         <di:waypoint x="798" y="70" />
-        <di:waypoint x="848" y="70" />
+        <di:waypoint x="873" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_SendToAwait_di" bpmnElement="Flow_SendToAwait">
-        <di:waypoint x="948" y="70" />
-        <di:waypoint x="1023" y="70" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_AwaitToDraft_di" bpmnElement="Flow_AwaitToDraft">
-        <di:waypoint x="1073" y="70" />
-        <di:waypoint x="1148" y="70" />
+      <bpmndi:BPMNEdge id="Flow_AwaitToSend_di" bpmnElement="Flow_AwaitToSend">
+        <di:waypoint x="923" y="70" />
+        <di:waypoint x="998" y="70" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_DraftToReview_di" bpmnElement="Flow_DraftToReview">
-        <di:waypoint x="1248" y="70" />
-        <di:waypoint x="1298" y="70" />
+        <di:waypoint x="1098" y="70" />
+        <di:waypoint x="1148" y="70" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ReviewToDecision_di" bpmnElement="Flow_ReviewToDecision">
-        <di:waypoint x="1398" y="70" />
-        <di:waypoint x="1473" y="70" />
+        <di:waypoint x="1248" y="70" />
+        <di:waypoint x="1323" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_DecisionToAwait_Yes_di" bpmnElement="Flow_DecisionToAwait_Yes">
-        <di:waypoint x="1498" y="95" />
-        <di:waypoint x="1498" y="140" />
-        <di:waypoint x="1048" y="140" />
-        <di:waypoint x="1048" y="95" />
+      <bpmndi:BPMNEdge id="Flow_DecisionToRefine_Yes_di" bpmnElement="Flow_DecisionToRefine_Yes">
+        <di:waypoint x="1373" y="70" />
+        <di:waypoint x="1448" y="70" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_DecisionToList_No_di" bpmnElement="Flow_DecisionToList_No">
-        <di:waypoint x="1523" y="70" />
-        <di:waypoint x="1598" y="70" />
+        <di:waypoint x="1348" y="95" />
+        <di:waypoint x="1348" y="210" />
+        <di:waypoint x="1448" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RefineToAwait_di" bpmnElement="Flow_RefineToAwait">
+        <di:waypoint x="1498" y="110" />
+        <di:waypoint x="1498" y="140" />
+        <di:waypoint x="898" y="140" />
+        <di:waypoint x="898" y="95" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ListToOrder_di" bpmnElement="Flow_ListToOrder">
-        <di:waypoint x="1698" y="70" />
-        <di:waypoint x="1748" y="70" />
+        <di:waypoint x="1548" y="210" />
+        <di:waypoint x="1598" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_OrderToSplit_di" bpmnElement="Flow_OrderToSplit">
-        <di:waypoint x="1848" y="70" />
-        <di:waypoint x="1923" y="70" />
+        <di:waypoint x="1698" y="210" />
+        <di:waypoint x="1773" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_SplitToAwait_di" bpmnElement="Flow_SplitToAwait">
-        <di:waypoint x="1973" y="70" />
-        <di:waypoint x="2048" y="70" />
+        <di:waypoint x="1823" y="210" />
+        <di:waypoint x="1898" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_SplitToContact_di" bpmnElement="Flow_SplitToContact">
-        <di:waypoint x="1948" y="95" />
-        <di:waypoint x="1948" y="210" />
-        <di:waypoint x="2048" y="210" />
+        <di:waypoint x="1798" y="235" />
+        <di:waypoint x="1798" y="350" />
+        <di:waypoint x="1898" y="350" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_AwaitToJoin_di" bpmnElement="Flow_AwaitToJoin">
-        <di:waypoint x="2148" y="70" />
-        <di:waypoint x="2223" y="70" />
+        <di:waypoint x="1998" y="210" />
+        <di:waypoint x="2073" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_JoinToInvite_di" bpmnElement="Flow_JoinToInvite">
-        <di:waypoint x="2273" y="70" />
-        <di:waypoint x="2348" y="70" />
+        <di:waypoint x="2123" y="210" />
+        <di:waypoint x="2198" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_InviteToList_di" bpmnElement="Flow_InviteToList">
-        <di:waypoint x="2448" y="70" />
-        <di:waypoint x="2498" y="70" />
+        <di:waypoint x="2298" y="210" />
+        <di:waypoint x="2348" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ListToEnd_di" bpmnElement="Flow_ListToEnd">
-        <di:waypoint x="2598" y="70" />
-        <di:waypoint x="2680" y="70" />
+        <di:waypoint x="2448" y="210" />
+        <di:waypoint x="2530" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_ContactToJoin_di" bpmnElement="Flow_ContactToJoin">
-        <di:waypoint x="2148" y="210" />
-        <di:waypoint x="2248" y="210" />
-        <di:waypoint x="2248" y="95" />
+        <di:waypoint x="1998" y="350" />
+        <di:waypoint x="2098" y="350" />
+        <di:waypoint x="2098" y="235" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DOA_Collect_To_ReqList_di" bpmnElement="DOA_Collect_To_ReqList">
         <di:waypoint x="748" y="110" />
@@ -260,35 +265,43 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DIA_ReqList_To_Send_di" bpmnElement="DIA_ReqList_To_Send">
         <di:waypoint x="766" y="185" />
-        <di:waypoint x="848" y="70" />
+        <di:waypoint x="998" y="70" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DOA_Architect_To_Draft_di" bpmnElement="DOA_Architect_To_Draft">
+        <di:waypoint x="1048" y="110" />
+        <di:waypoint x="1048" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DIA_Draft_To_Review_di" bpmnElement="DIA_Draft_To_Review">
+        <di:waypoint x="1066" y="185" />
+        <di:waypoint x="1148" y="70" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DOA_Review_To_Decision_di" bpmnElement="DOA_Review_To_Decision">
         <di:waypoint x="1198" y="110" />
         <di:waypoint x="1198" y="160" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DIA_Draft_To_Review_di" bpmnElement="DIA_Draft_To_Review">
-        <di:waypoint x="1216" y="185" />
-        <di:waypoint x="1298" y="70" />
+      <bpmndi:BPMNEdge id="DIA_RequirementsList_RefineReq_di" bpmnElement="DIA_RequirementsList_RefineReq">
+        <di:waypoint x="766" y="185" />
+        <di:waypoint x="1448" y="70" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DOA_Review_To_Decision_di" bpmnElement="DOA_Review_To_Decision">
-        <di:waypoint x="1348" y="110" />
-        <di:waypoint x="1348" y="160" />
+      <bpmndi:BPMNEdge id="DOA_RefineReq_RequirementsList_di" bpmnElement="DOA_RefineReq_RequirementsList">
+        <di:waypoint x="1448" y="70" />
+        <di:waypoint x="766" y="185" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DIA_Draft_To_CreateMaterialList_di" bpmnElement="DIA_Draft_To_CreateMaterialList">
-        <di:waypoint x="1216" y="185" />
-        <di:waypoint x="1598" y="70" />
+        <di:waypoint x="1066" y="185" />
+        <di:waypoint x="1448" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DOA_CreateList_To_MaterialList_di" bpmnElement="DOA_CreateList_To_MaterialList">
-        <di:waypoint x="1648" y="110" />
-        <di:waypoint x="1648" y="160" />
+        <di:waypoint x="1498" y="250" />
+        <di:waypoint x="1498" y="300" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DIA_MaterialList_To_Order_di" bpmnElement="DIA_MaterialList_To_Order">
-        <di:waypoint x="1666" y="185" />
-        <di:waypoint x="1748" y="70" />
+        <di:waypoint x="1516" y="325" />
+        <di:waypoint x="1598" y="210" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DOA_CreateAttendeeList_To_List_di" bpmnElement="DOA_CreateAttendeeList_To_List">
-        <di:waypoint x="2548" y="110" />
-        <di:waypoint x="2548" y="160" />
+        <di:waypoint x="2398" y="250" />
+        <di:waypoint x="2398" y="300" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

@@ -26,8 +26,8 @@ const processJson = JSON.parse(
   //await fs.readFile(new URL('./processTests/claude3-7-sonnet.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
  // await fs.readFile(new URL('./processTests/deepSeek-r1.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
  //await fs.readFile(new URL('./processTests/3a/originalBPMN.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
-    await fs.readFile(new URL('./processTests/3a/dataObjectsAdded.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
-
+   // await fs.readFile(new URL('./processTests/3a/dataObjectsAdded.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
+ await fs.readFile(new URL('./processTests/3b/gemini3b.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
   //await fs.readFile(new URL('./processTests/gpt4-5.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
   //await fs.readFile(new URL('./processTests/gpt4o.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!
   //await fs.readFile(new URL('./processTests/gpto3.json', import.meta.url)) // <<< --- !!! UPDATE THIS !!!

@@ -1,0 +1,194 @@
+{
+  "id": "TreeHouseBuildingProcess",
+  "name": "Tree House Building Process",
+  "nodes": [
+    {
+      "id": "StartEvent_ProjectStarted",
+      "type": "startEvent",
+      "name": "Tree House Project Started"
+    },
+    {
+      "id": "Task_CollectRequirements",
+      "type": "task",
+      "name": "Collect Requirements"
+    },
+    {
+      "id": "Gateway_AwaitInput",
+      "type": "exclusiveGateway",
+      "name": "Await Architect Input"
+    },
+    {
+      "id": "Task_SendRequirements",
+      "type": "task",
+      "name": "Send Requirements to Architect and recieve Architect Draft"
+    },
+    
+    {
+      "id": "Task_ReviewAndRefineDraft",
+      "type": "task",
+      "name": "Review Draft"
+    },
+    {
+      "id": "Gateway_RefinementsNeeded",
+      "type": "exclusiveGateway"
+    },
+    {
+      "id": "Task_RefineRequirements",
+      "type": "task",
+      "name": "Refine Requirements"
+    },
+    {
+      "id": "Task_CreateMaterialList",
+      "type": "task",
+      "name": "Create List of Needed Materials"
+    },
+    {
+      "id": "Task_OrderMaterials",
+      "type": "task",
+      "name": "Order Materials"
+    },
+    {
+      "id": "Gateway_ParallelSplit",
+      "type": "parallelGateway"
+    },
+    {
+      "id": "Task_AwaitMaterialDelivery",
+      "type": "task",
+      "name": "Await Material Delivery"
+    },
+    {
+      "id": "Task_ContactFriends",
+      "type": "task",
+      "name": "Contact Friends for Building"
+    },
+    {
+      "id": "Gateway_ParallelJoin",
+      "type": "parallelGateway"
+    },
+    {
+      "id": "Task_SendPartyInvitations",
+      "type": "task",
+      "name": "Send Party Invitations"
+    },
+    {
+      "id": "Task_CreateAttendeeList",
+      "type": "task",
+      "name": "Create List of Party Attendees"
+    },
+    {
+      "id": "EndEvent_ProcessComplete",
+      "type": "endEvent",
+      "name": "Tree House and Party Ready"
+    }
+  ],
+  "flows": [
+    {
+      "id": "Flow_StartToCollect",
+      "source": "StartEvent_ProjectStarted",
+      "target": "Task_CollectRequirements",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_CollectToAwait",
+      "source": "Task_CollectRequirements",
+      "target": "Gateway_AwaitInput",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_AwaitToSend",
+      "source": "Gateway_AwaitInput",
+      "target": "Task_SendRequirements",
+      "type": "sequenceFlow"
+    },
+    
+    {
+      "id": "Flow_DraftToReview",
+      "source": "Task_SendRequirements",
+      "target": "Task_ReviewAndRefineDraft",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_ReviewToDecision",
+      "source": "Task_ReviewAndRefineDraft",
+      "target": "Gateway_RefinementsNeeded",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_DecisionToRefine_Yes",
+      "source": "Gateway_RefinementsNeeded",
+      "target": "Task_RefineRequirements",
+      "type": "sequenceFlow",
+      "name": "Yes, Refinements Needed",
+      "condition": "Yes, Refinements Needed"
+    },
+    {
+      "id": "Flow_RefineToAwait",
+      "source": "Task_RefineRequirements",
+      "target": "Gateway_AwaitInput",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_DecisionToList_No",
+      "source": "Gateway_RefinementsNeeded",
+      "target": "Task_CreateMaterialList",
+      "type": "sequenceFlow",
+      "name": "No, Draft Finalized",
+      "condition": "No, Draft Finalized",
+      "isDefault": true
+    },
+    {
+      "id": "Flow_ListToOrder",
+      "source": "Task_CreateMaterialList",
+      "target": "Task_OrderMaterials",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_OrderToSplit",
+      "source": "Task_OrderMaterials",
+      "target": "Gateway_ParallelSplit",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_SplitToAwait",
+      "source": "Gateway_ParallelSplit",
+      "target": "Task_AwaitMaterialDelivery",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_SplitToContact",
+      "source": "Gateway_ParallelSplit",
+      "target": "Task_ContactFriends",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_AwaitToJoin",
+      "source": "Task_AwaitMaterialDelivery",
+      "target": "Gateway_ParallelJoin",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_ContactToJoin",
+      "source": "Task_ContactFriends",
+      "target": "Gateway_ParallelJoin",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_JoinToInvite",
+      "source": "Gateway_ParallelJoin",
+      "target": "Task_SendPartyInvitations",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_InviteToList",
+      "source": "Task_SendPartyInvitations",
+      "target": "Task_CreateAttendeeList",
+      "type": "sequenceFlow"
+    },
+    {
+      "id": "Flow_ListToEnd",
+      "source": "Task_CreateAttendeeList",
+      "target": "EndEvent_ProcessComplete",
+      "type": "sequenceFlow"
+    }
+  ]
+}
